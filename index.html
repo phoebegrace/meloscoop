@@ -49,7 +49,6 @@
   .topbar-spacer{flex:1}
   .top-link{display:inline-flex;align-items:center;gap:7px;text-decoration:none;font-weight:900;font-size:14px;background:#fff;color:var(--purple);border-radius:999px;padding:10px 16px;min-height:44px;white-space:nowrap}
   .top-queue{display:none;align-items:center;gap:7px;text-decoration:none;font-weight:900;font-size:14px;background:var(--panel-2);border:1px solid var(--line);color:#fff;border-radius:999px;padding:10px 14px;min-height:44px}
-  .top-queue b{background:var(--pink);border-radius:999px;padding:1px 9px;font-size:13px}
   @media(min-width:560px){.top-queue{display:inline-flex}}
 
   /* ============ THE VIDEOKE MACHINE ============ */
@@ -135,7 +134,7 @@
   }
   @media (prefers-reduced-motion: reduce){
     .flash.go{animation:none}
-    .bp-disc,.cbtn,.ctrl-bar{transition:none}
+    .bp-disc,.cbtn,.ctrl-bar,.skip-note{transition:none}
   }
 
   /* LED ticker under the screen */
@@ -216,10 +215,17 @@
     background:linear-gradient(180deg,rgba(5,2,16,.9),rgba(5,2,16,.66));border-bottom:1px solid rgba(106,82,184,.6);
     padding:7px 10px;backdrop-filter:blur(3px)}
   .upnext-bar.show{display:flex}
+  /* Notice shown on the screen when a song turns out to be unplayable here
+     and the machine skips it — replaces a dead "Video unavailable" player */
+  .skip-note{position:absolute;left:50%;bottom:64px;transform:translate(-50%,16px);z-index:8;max-width:min(92%,560px);
+    display:flex;gap:9px;align-items:flex-start;background:rgba(10,4,26,.94);border:1px solid var(--led-amber);border-radius:13px;
+    padding:11px 14px;color:#fff;font-weight:800;font-size:13.5px;line-height:1.45;opacity:0;pointer-events:none;
+    transition:opacity .3s ease,transform .3s ease;box-shadow:0 14px 34px rgba(0,0,0,.55)}
+  .skip-note.show{opacity:1;transform:translate(-50%,0)}
+  .skip-note .ic{width:17px;height:17px;color:var(--led-amber);margin-top:1px}
+  @media(max-width:559px){.skip-note{bottom:56px;font-size:12.5px;padding:9px 11px}}
   .unb-head{display:flex;align-items:center;gap:9px;flex:none}
   .unb-label{font-family:"Fredoka",sans-serif;font-weight:600;letter-spacing:.12em;font-size:13px;color:#fff;white-space:nowrap}
-  .unb-count{display:inline-block;font-family:"Share Tech Mono",monospace;font-size:12px;letter-spacing:.06em;color:#0b2b29;background:var(--cyan);border-radius:999px;padding:4px 11px;white-space:nowrap}
-  .unb-count b{font-size:14px}
   .unb-track{display:flex;gap:8px;align-items:center;flex:1;min-width:0;overflow-x:auto;padding:4px 2px;scrollbar-width:thin}
   .unb-empty{color:var(--muted);font-weight:700;font-size:13.5px;white-space:nowrap}
   .unb-chip{flex:none;display:inline-flex;align-items:center;gap:8px;background:rgba(18,10,42,.92);border:1px solid var(--line);color:#fff;border-radius:999px;padding:5px 12px 5px 6px;font-family:inherit;font-weight:800;font-size:13px;transition:transform .2s var(--ease-spring),background-color .2s ease,border-color .2s ease}
@@ -269,7 +275,6 @@
   .panel-head{display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap}
   .panel-head h2{font-family:"Fredoka",sans-serif;font-size:25px;margin:0;line-height:1.1}
   .panel-head p{margin:4px 0 0;color:var(--muted);font-weight:700;font-size:14px}
-  .count-badge{background:var(--pink);color:#fff;font-weight:900;font-size:13px;border-radius:999px;padding:6px 12px;white-space:nowrap}
   .search{position:relative;margin-top:16px}
   .search input{width:100%;min-height:60px;border-radius:16px;border:3px solid var(--pink);background:#0d0620;color:#fff;font-family:inherit;font-weight:700;font-size:17px;padding:14px 50px 14px 48px;box-shadow:0 10px 26px rgba(0,0,0,.35);transition:box-shadow .25s ease,border-color .2s ease}
   .search input::placeholder{color:var(--muted-2)}
@@ -295,6 +300,8 @@
   .song.hidden{display:none}
   .song:hover{translate:0 -2px;background:rgba(255,255,255,.06);box-shadow:0 12px 26px rgba(0,0,0,.32)}
   .song.playing{background:rgba(255,77,166,.10);box-shadow:inset 0 0 0 2px var(--pink)}
+  .song.blocked{opacity:.55}
+  .song.blocked .act[disabled]{cursor:default}
   .song-code{font-family:"Share Tech Mono",monospace;font-size:19px;background:#070313;border:1px solid #4a3590;color:var(--yellow);border-radius:10px;text-align:center;padding:10px 4px;letter-spacing:.04em}
   .song-code small{display:block;font-size:9px;color:var(--muted-2);letter-spacing:.16em;margin-bottom:2px}
   .song-main{display:flex;gap:12px;align-items:center;min-width:0}
@@ -374,7 +381,6 @@
   .q-btn:hover{transform:scale(1.1)}
   .act:active,.filter:active,.quick-chip:active,.clear-btn:active,.top-link:active{transform:scale(.95)}
   .q-btn:active{transform:scale(.9)}
-  #topQueueCount{display:inline-block}
 
   /* Scroll targets clear the sticky topbar */
   .machine,#queuePanel,#songList{scroll-margin-top:84px}
@@ -414,7 +420,6 @@
     .ctl{min-height:54px;font-size:16px;padding:12px 10px;border-radius:13px}
     .upnext-bar{gap:7px;padding:6px 8px}
     .unb-label{font-size:11.5px}
-    .unb-count{font-size:11px;padding:3px 8px}
     .unb-chip{font-size:12px;padding:4px 10px 4px 5px}
     .unb-next{min-height:36px;padding:6px 10px;font-size:12px}
     .layout{gap:16px;margin-top:20px}
@@ -541,7 +546,7 @@
       <span class="brand-name">MELO<span class="scoop">SCOOP</span><span class="brand-sub">VIDEOKE</span></span>
     </a>
     <div class="topbar-spacer"></div>
-    <a class="top-queue" href="#queuePanel">Up Next <b id="topQueueCount">0</b></a>
+    <a class="top-queue" href="#queuePanel">Up Next</a>
     <button class="top-mode" id="modeBtn" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span>Link</span></button>
     <a class="top-link" href="https://www.youtube.com/@phoebebuzz" target="_blank" rel="noopener">YouTube <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
   </div>
@@ -602,12 +607,15 @@
         <div class="upnext-bar" id="upNextBar">
           <div class="unb-head">
             <span class="unb-label"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> RESERVED</span>
-            <span class="unb-count" id="unbCount"><b>0</b> QUEUED</span>
           </div>
           <div class="unb-track" id="unbTrack">
             <span class="unb-empty" id="unbEmpty">No songs reserved yet</span>
           </div>
           <button class="ctl ctl-next unb-next" id="unbNext" type="button" disabled><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17.5" y="4" width="2.6" height="16" rx="1"/></svg> PLAY NEXT</button>
+        </div>
+        <div class="skip-note" id="skipNote" role="status">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><path d="M12 17h.01"/></svg>
+          <span id="skipNoteText"></span>
         </div>
         <div class="screen-overlay" id="screenOverlay">
           <span class="so-label">THIS IS THE SCREEN</span>
@@ -704,7 +712,6 @@
           <h2><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> Songbook</h2>
           <p>Search any song — karaoke versions pulled live from all of YouTube, each with its videoke song number.</p>
         </div>
-        <span class="count-badge" id="songCount">5 songs</span>
       </div>
       <p class="live-status" id="liveStatus" role="status">Starter list: MELOSCOOP favorites. Search above to pull karaoke from all of YouTube.</p>
 
@@ -898,6 +905,29 @@
      any uploader controls — anything rendered as HTML must be escaped. */
   function escapeHtml(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
+  /* Videos whose owner disabled playback on other websites can never play
+     in this embed. YouTube's oEmbed endpoint is the ground truth: it
+     answers 200 only when a video may be embedded elsewhere, and
+     401 / 403 / 404 when it may not (or is gone). Verdicts are cached for
+     the session, and confirmed-blocked ids are remembered so the songbook,
+     the queue and NEXT all skip them. fetchJSON is declared further down;
+     function declarations hoist, so calling it from here is fine. */
+  var blockedIds = {};
+  var embedCache = {};
+  function checkEmbeddable(id){
+    if (Object.prototype.hasOwnProperty.call(embedCache, id)) return Promise.resolve(embedCache[id]);
+    return fetchJSON('https://www.youtube.com/oembed?url=' + encodeURIComponent('https://www.youtube.com/watch?v=' + id) + '&format=json', 8000)
+      .then(function(){ embedCache[id] = true; return true; })
+      .catch(function(err){
+        /* A definitive 401 / 403 / 404 means embedding is off. A failure
+           with no HTTP status means the check itself could not run, so the
+           video is kept and the player's error handler is the safety net. */
+        var blocked = !!(err && /^http (401|403|404)$/.test(err.message));
+        if (blocked){ embedCache[id] = false; blockedIds[id] = true; }
+        return !blocked;
+      });
+  }
+
   var current = songs[0];
   var queue = []; // array of video ids, in order
   var history = []; // ids of songs played before the current one, for PREV
@@ -910,7 +940,65 @@
     toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 2600);
   }
 
+  /* On-screen notice shown when a song turns out to be unplayable here, so
+     the skip is explained instead of a dead "Video unavailable" player
+     being left on screen. */
+  var skipNote = document.getElementById('skipNote');
+  var skipNoteText = document.getElementById('skipNoteText');
+  var skipNoteTimer = null;
+  function showSkipNote(text){
+    skipNoteText.textContent = text;
+    skipNote.classList.add('show');
+    if (skipNoteTimer) clearTimeout(skipNoteTimer);
+    skipNoteTimer = setTimeout(hideSkipNote, 5200);
+  }
+  function hideSkipNote(){
+    skipNote.classList.remove('show');
+    if (skipNoteTimer){ clearTimeout(skipNoteTimer); skipNoteTimer = null; }
+  }
+
+  /* When the player reports the current song cannot be played here: mark
+     it blocked, grey it out in the songbook, drop it from the queue, and
+     move on to the next playable song. skipChain counts consecutive
+     auto-skips so a run of blocked songs cannot loop forever. */
+  var skipChain = 0;
+  var skipTimer = null;
+  function markRowBlocked(id){
+    rows.forEach(function(r){
+      if (r.getAttribute('data-id') !== id) return;
+      r.classList.add('blocked');
+      var pb = r.querySelector('[data-action="play"]');
+      var qb = r.querySelector('[data-action="queue"]');
+      if (pb){ pb.disabled = true; pb.textContent = "Can't play here"; }
+      if (qb){ qb.disabled = true; qb.textContent = 'Unavailable'; }
+    });
+  }
+  function handleUnplayable(song){
+    if (!song) return;
+    blockedIds[song.id] = true;
+    embedCache[song.id] = false;
+    markRowBlocked(song.id);
+    queue = queue.filter(function(id){ return id !== song.id; });
+    syncQueueUI();
+    skipChain++;
+    if (skipChain > 30){
+      showSkipNote('No playable version of the next songs could be found. Try another search.');
+      return;
+    }
+    var next = findNextPlayable(song);
+    if (next){
+      showSkipNote('"' + song.title + '" can\'t play here — its owner disabled playback on other websites. Skipping to the next playable song.');
+      if (skipTimer) clearTimeout(skipTimer);
+      skipTimer = setTimeout(function(){ skipTimer = null; loadSong(next, true); }, 1600);
+    } else {
+      showSkipNote('"' + song.title + '" can\'t play here — its owner disabled playback on other websites, and no other playable song is loaded yet.');
+    }
+  }
+
   function loadSong(song, autoplay){
+    if (!song) return;
+    hideSkipNote();
+    if (skipTimer){ clearTimeout(skipTimer); skipTimer = null; }
     if (current && song && current.id !== song.id && !goingBack){
       history.push(current.id);
       if (history.length > 50) history.shift();
@@ -1005,7 +1093,7 @@
   function onPlayerStateChange(e){
     playerState = e.data; /* 0 ended · 1 playing · 2 paused · 3 buffering · 5 cued */
     broadcastState();
-    if (e.data === 1){ setPlayingUI(true); }
+    if (e.data === 1){ skipChain = 0; setPlayingUI(true); }
     else if (e.data === 2){ bigPlayTxt.textContent = 'RESUME'; setPlayingUI(false); }
     else if (e.data === 5){ bigPlayTxt.textContent = 'TAP TO SING'; setPlayingUI(false); }
     else if (e.data === 0){
@@ -1013,6 +1101,13 @@
       if (queue.length){ playNext(); } /* auto-advance to the next reserved song */
       else { bigPlayTxt.textContent = 'SONG DONE — ENCORE?'; }
     }
+  }
+  /* Player error 101 / 150 = the owner disabled playback on other
+     websites; 100 = the video is gone or private. Either way this song can
+     never play here, so skip it instead of leaving a dead player. */
+  function onPlayerError(e){
+    var code = e && e.data;
+    if (code === 100 || code === 101 || code === 150){ handleUnplayable(current); }
   }
   function syncMuteIcon(){ if (player && playerReady && player.isMuted) cMute.innerHTML = player.isMuted() ? ICON_VOLX : ICON_VOL; }
   function onPlayerReady(){
@@ -1030,7 +1125,7 @@
       width: '100%', height: '100%',
       videoId: current.id,
       playerVars: { autoplay: 0, controls: 0, disablekb: 1, fs: 0, iv_load_policy: 3, modestbranding: 1, playsinline: 1, rel: 0, cc_load_policy: 0 },
-      events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange }
+      events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange, onError: onPlayerError }
     });
   };
   var apiTag = document.createElement('script');
@@ -1140,11 +1235,9 @@
   var queueEmpty = document.getElementById('queueEmpty');
   var clearBtn = document.getElementById('clearQueue');
   var nextBtn2 = document.getElementById('btnNext2');
-  var topQueueCount = document.getElementById('topQueueCount');
   var upNextBar = document.getElementById('upNextBar');
   var unbTrack = document.getElementById('unbTrack');
   var unbEmpty = document.getElementById('unbEmpty');
-  var unbCount = document.getElementById('unbCount');
   var unbNext = document.getElementById('unbNext');
 
   function syncQueueUI(){
@@ -1189,10 +1282,8 @@
     queueEmpty.style.display = has ? 'none' : 'block';
     clearBtn.disabled = !has;
     nextBtn2.disabled = !has;
-    topQueueCount.textContent = queue.length;
-    /* Top strip: the whole lineup, in order, with a clear count */
+    /* Top strip: the whole lineup, in order */
     unbNext.disabled = !has;
-    unbCount.innerHTML = '<b>' + queue.length + '</b> ' + (queue.length === 0 ? 'QUEUED' : (queue.length === 1 ? 'SONG QUEUED' : 'SONGS QUEUED'));
     unbTrack.querySelectorAll('.unb-chip').forEach(function(c){ c.remove(); });
     unbEmpty.style.display = has ? 'none' : '';
     queue.forEach(function(id, idx){
@@ -1221,23 +1312,45 @@
       var items = queueList.querySelectorAll('.q-item');
       var last = items[items.length - 1];
       if (last) gsap.fromTo(last, {opacity:0, x:26, scale:.95}, {opacity:1, x:0, scale:1, duration:.45, ease:'back.out(2.2)', clearProps:'transform,opacity'});
-      gsap.fromTo('#topQueueCount', {scale:1.6}, {scale:1, duration:.45, ease:'back.out(3)', clearProps:'transform'});
       var chips = unbTrack.querySelectorAll('.unb-chip');
       var lastChip = chips[chips.length - 1];
       if (lastChip) gsap.fromTo(lastChip, {opacity:0, scale:.75}, {opacity:1, scale:1, duration:.4, ease:'back.out(2.5)', clearProps:'transform,opacity'});
-      gsap.fromTo('#unbCount', {scale:1.35}, {scale:1, duration:.4, ease:'back.out(3)', clearProps:'transform'});
     }
     if (!silent) showToast('<b>#' + song.code + ' ' + escapeHtml(song.title) + '</b> &nbsp;added to Up Next');
   }
 
+  /* The next song that can actually play here: the reserved queue first,
+     then the songbook in order after the given song — never a blocked one. */
+  function findNextPlayable(fromSong){
+    while (queue.length){
+      var qid = queue.shift();
+      if (blockedIds[qid]) continue;
+      var qs = byId(qid);
+      if (qs) return qs;
+    }
+    if (!songs.length) return null;
+    var start = fromSong ? songs.indexOf(fromSong) : -1;
+    for (var k = 1; k <= songs.length; k++){
+      var cand = songs[(start + k) % songs.length];
+      if (cand && cand !== fromSong && !blockedIds[cand.id]) return cand;
+    }
+    return null;
+  }
+
   function playNext(){
     if (linkMode === 'remote'){ sendCmd({t:'next'}); return; }
+    while (queue.length && blockedIds[queue[0]]) queue.shift();
     if (queue.length){
       var s = byId(queue.shift());
       if (s){ loadSong(s, true); if (!suppressScroll) scrollToMachine(); return; }
     }
     var idx = songs.indexOf(current);
-    var next = songs[(idx + 1) % songs.length];
+    var next = null;
+    for (var k = 1; k <= songs.length; k++){
+      var cand = songs[(idx + k) % songs.length];
+      if (cand && !blockedIds[cand.id]){ next = cand; break; }
+    }
+    if (!next) next = songs[(idx + 1) % songs.length];
     loadSong(next, true); if (!suppressScroll) scrollToMachine();
   }
 
@@ -1377,7 +1490,6 @@
   var searchInput = document.getElementById('searchInput');
   var searchClear = document.getElementById('searchClear');
   var noResults = document.getElementById('noResults');
-  var songCount = document.getElementById('songCount');
   var activeFilter = 'all';
 
   function applyFilters(){
@@ -1392,7 +1504,6 @@
       if (show) visible++;
     });
     noResults.classList.toggle('show', visible === 0);
-    songCount.textContent = visible + (visible === 1 ? ' song' : ' songs');
     if (motionOK()){
       var vis = rows.filter(function(r){ return !r.classList.contains('hidden'); });
       if (vis.length) gsap.fromTo(vis, {opacity:0, y:12}, {opacity:1, y:0, duration:.3, stagger:.04, ease:'power2.out', overwrite:'auto', clearProps:'transform,opacity'});
@@ -1503,7 +1614,16 @@
       if (!Array.isArray(data)) throw new Error('bad data');
       var out = [];
       data.forEach(function(it){ var n = normalizeItem(it); if (n) out.push(n); });
-      return out;
+      /* Keep only videos that allow playback on other websites — each one
+         checked against YouTube's oEmbed endpoint — so the songbook never
+         offers a song that would die in the embed. rawCount is how many
+         usable results the page had before that filter, so the loader can
+         tell a short last page from a page full of blocked videos. */
+      return Promise.all(out.map(function(n){
+        return checkEmbeddable(n.id).then(function(ok){ return ok ? n : null; });
+      })).then(function(checked){
+        return { items: checked.filter(function(n){ return !!n; }), rawCount: out.length };
+      });
     });
   }
   function makeLiveRow(item, code){
@@ -1539,19 +1659,19 @@
     loadMoreWrap.hidden = false;
     loadMoreBtn.disabled = live.loading || live.done;
     loadMoreBtn.textContent = live.loading ? 'LOADING...' : (live.done ? 'NO MORE RESULTS' : 'LOAD MORE SONGS');
-    loadMoreMsg.textContent = live.done ? ('End of YouTube results for "' + live.raw + '" — ' + live.total + ' karaoke songs loaded.') : '';
+    loadMoreMsg.textContent = live.done ? ('End of YouTube results for "' + live.raw + '".') : '';
   }
   function loadLivePage(){
     if (!live.active || live.loading || live.done) return;
     live.loading = true; updateLoadMoreUI();
     var seq = searchSeq;
     var page = live.page + 1;
-    fetchSearchPage(live.ytq, page).then(function(items){
+    fetchSearchPage(live.ytq, page).then(function(res){
       if (seq !== searchSeq) return; /* a newer search replaced this one */
       live.page = page;
+      var items = res.items;
       var fresh = [];
       items.forEach(function(it){ if (!live.seen[it.id]){ live.seen[it.id] = true; fresh.push(it); } });
-      if (page === 1 && !fresh.length){ live.loading = false; restoreStarter('No karaoke found on YouTube for "' + live.raw + '" — showing the MELOSCOOP starter songs.'); return; }
       fresh.forEach(function(it){
         live.total++;
         var row = makeLiveRow(it, String(1000 + live.total));
@@ -1561,21 +1681,33 @@
       refreshSongs();
       syncQueueUI();
       if (current) rows.forEach(function(r){ r.classList.toggle('playing', r.getAttribute('data-id') === current.id); });
-      songCount.textContent = live.total + (live.total === 1 ? ' song' : ' songs');
-      if (items.length < 8 || !fresh.length) live.done = true;
+      /* A page can hold plenty of results yet almost nothing playable on
+         other websites (or nothing new): keep pulling the next pages so
+         the songbook still fills with songs that actually play. */
+      var needMore = fresh.length < 4 && res.rawCount >= 8 && page < 12;
+      if (res.rawCount < 8 || (!fresh.length && !needMore)) live.done = true;
       live.loading = false;
-      setLiveStatus('Live from YouTube — karaoke for "' + live.raw + '" · ' + live.total + ' songs loaded' + (live.done ? '' : ' · scroll down for more'), false);
+      if (live.total === 0 && live.done){
+        restoreStarter(res.rawCount ? ('Every karaoke result for "' + live.raw + '" has playback on other websites disabled — showing the MELOSCOOP starter songs.') : ('No karaoke found on YouTube for "' + live.raw + '" — showing the MELOSCOOP starter songs.'));
+        return;
+      }
+      setLiveStatus('Live from YouTube — karaoke for "' + live.raw + '"' + (live.done ? '' : ' · scroll down for more'), false);
       updateLoadMoreUI();
-      if (page === 1 && linkMode === 'solo' && songs.length) loadSong(songs[0], false);
+      if (page === 1 && linkMode === 'solo'){
+        var firstPlayable = null;
+        for (var fi = 0; fi < songs.length; fi++){ if (!blockedIds[songs[fi].id]){ firstPlayable = songs[fi]; break; } }
+        if (firstPlayable) loadSong(firstPlayable, false);
+      }
       if (motionOK() && fresh.length){
         var newRows = rows.slice(Math.max(0, rows.length - fresh.length));
         if (newRows.length) gsap.fromTo(newRows, {opacity:0, y:14}, {opacity:1, y:0, duration:.35, stagger:.03, ease:'power2.out', overwrite:'auto', clearProps:'transform,opacity'});
       }
+      if (needMore && live.active && seq === searchSeq) loadLivePage();
     }).catch(function(){
       if (seq !== searchSeq) return;
       live.loading = false;
-      if (page === 1){ restoreStarter('YouTube search is unreachable right now — showing the MELOSCOOP starter songs instead.'); }
-      else { live.done = true; updateLoadMoreUI(); setLiveStatus('Could not load more from YouTube — ' + live.total + ' songs loaded so far.', true); }
+      if (page === 1 && live.total === 0){ restoreStarter('YouTube search is unreachable right now — showing the MELOSCOOP starter songs instead.'); }
+      else { live.done = true; updateLoadMoreUI(); setLiveStatus('Could not load more from YouTube — showing what is loaded so far.', true); }
     });
   }
   function startLiveSearch(raw){
@@ -1588,7 +1720,6 @@
     noResults.classList.remove('show');
     songListEl.innerHTML = '';
     refreshSongs();
-    songCount.textContent = 'Searching...';
     setLiveStatus('Searching YouTube for karaoke: "' + raw + '"...', false);
     updateLoadMoreUI();
     loadLivePage();
@@ -1601,7 +1732,6 @@
     rows.forEach(bindRow);
     rows.forEach(function(r){ r.classList.remove('hidden'); r.classList.toggle('playing', !!(current && r.getAttribute('data-id') === current.id)); });
     noResults.classList.remove('show');
-    songCount.textContent = songs.length + (songs.length === 1 ? ' song' : ' songs');
     setLiveStatus(note || 'Starter list: MELOSCOOP favorites. Search above to pull karaoke from all of YouTube.', !!note);
     updateLoadMoreUI();
     syncQueueUI();
