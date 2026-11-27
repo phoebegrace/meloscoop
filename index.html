@@ -88,6 +88,54 @@
   .screen{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;border:2px solid #000;box-shadow:0 0 0 1px #3c2a75,0 0 34px rgba(57,220,210,.10)}
   .screen::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.07) 0%,transparent 32%)}
   .screen iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  #stagePlayer{position:absolute;inset:0;width:100%;height:100%;border:0}
+  /* Fullscreen = the whole TV: MELOSCOOP frame, NOW PLAYING header, LED song
+     number, equalizer and ticker stay visible around the video */
+  .tv:fullscreen,.tv:-webkit-full-screen{height:100%;display:flex;flex-direction:column;border-radius:0;border:0;padding:16px;background:#07030f}
+  .tv:fullscreen .screen,.tv:-webkit-full-screen .screen{flex:1;aspect-ratio:auto;min-height:0}
+  .tv-full-btn{margin-left:10px;flex:none;border:1px solid #6a52b8;border-radius:10px;background:linear-gradient(180deg,#51399b,#33206e);color:#fff;font-family:"Fredoka",sans-serif;font-weight:600;font-size:12px;letter-spacing:.1em;padding:9px 13px;min-height:38px;box-shadow:0 3px 0 #0d0620;transition:transform .08s ease,box-shadow .08s ease}
+  .tv-full-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #0d0620}
+
+  /* Custom player UI — replaces YouTube's own overlay controls */
+  .click-layer{position:absolute;inset:0;z-index:2;cursor:pointer}
+  .big-play{position:absolute;z-index:4;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:11px;background:none;border:0;color:#fff;padding:0}
+  .big-play.hide{display:none}
+  .bp-disc{width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:33px;padding-left:7px;color:#fff;
+    background:linear-gradient(180deg,#ff6cb5,var(--pink-dark));box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 0 6px rgba(255,77,166,.25),inset 0 2px 0 rgba(255,255,255,.4);
+    transition:transform .25s var(--ease-spring)}
+  .big-play:hover .bp-disc{transform:scale(1.08)}
+  .big-play:active .bp-disc{transform:scale(.96)}
+  .bp-txt{font-family:"Fredoka",sans-serif;font-weight:600;letter-spacing:.22em;font-size:12px;background:rgba(5,2,16,.74);padding:7px 14px 7px 17px;border-radius:999px;border:1px solid rgba(255,255,255,.22);white-space:nowrap}
+  .flash{position:absolute;z-index:3;left:50%;top:50%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;background:rgba(5,2,16,.55);color:#fff;display:flex;align-items:center;justify-content:center;font-size:29px;opacity:0;pointer-events:none}
+  .flash.go{animation:flashpop .5s ease-out}
+  @keyframes flashpop{0%{opacity:.9;transform:translate(-50%,-50%) scale(.7)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.25)}}
+  .ctrl-bar{position:absolute;z-index:5;left:0;right:0;bottom:0;display:flex;align-items:center;gap:6px;padding:28px 12px 10px;background:linear-gradient(180deg,transparent,rgba(5,2,16,.85) 45%);transition:opacity .3s ease}
+  .screen.ui-idle .ctrl-bar{opacity:0;pointer-events:none}
+  .screen.ui-idle{cursor:none}
+  .cbtn{flex:none;width:42px;height:42px;border:0;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;font-size:16px;display:inline-flex;align-items:center;justify-content:center;transition:background-color .2s ease,transform .15s var(--ease-spring)}
+  .cbtn:hover{background:rgba(255,255,255,.24)}
+  .cbtn:active{transform:scale(.92)}
+  .cbtn-play{background:linear-gradient(180deg,#ff6cb5,var(--pink-dark));width:46px;height:46px;font-size:16px;box-shadow:0 4px 14px rgba(255,77,166,.4)}
+  .cbtn-play:hover{background:linear-gradient(180deg,#ff6cb5,var(--pink-dark))}
+  .ctime{font-family:"Share Tech Mono",monospace;font-size:12.5px;color:#e9e2ff;white-space:nowrap;padding:0 2px}
+  .prog{position:relative;flex:1;height:24px;display:flex;align-items:center;cursor:pointer;touch-action:none;border-radius:99px}
+  .prog::before{content:"";position:absolute;left:0;right:0;height:5px;border-radius:99px;background:rgba(255,255,255,.22)}
+  .prog-buf{position:absolute;left:0;height:5px;border-radius:99px;background:rgba(255,255,255,.35);width:0}
+  .prog-fill{position:absolute;left:0;height:5px;border-radius:99px;background:linear-gradient(90deg,var(--pink),var(--cyan));width:0}
+  .prog-knob{position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.6);left:0;transform:translateX(-50%);pointer-events:none}
+  .screen.no-api .prog,.screen.no-api .ctime,.screen.no-api #cMute{display:none}
+  @media(max-width:559px){
+    .bp-disc{width:68px;height:68px;font-size:27px}
+    .bp-txt{font-size:11px}
+    .ctime{display:none}
+    .ctrl-bar{gap:4px;padding:24px 8px 8px}
+    .cbtn{width:38px;height:38px;font-size:14px}
+    .cbtn-play{width:42px;height:42px}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .flash.go{animation:none}
+    .bp-disc,.cbtn,.ctrl-bar{transition:none}
+  }
 
   /* LED ticker under the screen */
   .marquee{margin-top:12px;background:#000;border:1px solid #3c2a75;border-radius:9px;overflow:hidden;box-shadow:inset 0 2px 8px rgba(0,0,0,.95)}
@@ -152,10 +200,21 @@
     background:linear-gradient(180deg,#51399b,#33206e);box-shadow:0 3px 0 #0d0620;transition:transform .08s ease,box-shadow .08s ease}
   .fn-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #0d0620}
   .fn-val{flex:1;text-align:center;color:var(--led);font-size:17px;padding:4px 2px;text-shadow:0 0 7px rgba(57,255,220,.55)}
-  .upnext-strip{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:16px;background:rgba(0,0,0,.4);border:1px dashed #55409c;border-radius:14px;padding:10px 12px;font-size:14px;font-weight:800;color:var(--muted)}
-  .upnext-strip .lbl{color:var(--cyan);font-family:"Fredoka",sans-serif;letter-spacing:.1em;font-size:12px}
-  .upnext-strip .chip{background:var(--panel-2);border:1px solid var(--line);color:#fff;border-radius:999px;padding:5px 11px;font-size:13px}
-  .upnext-strip .chip b{font-family:"Share Tech Mono",monospace;font-weight:400;color:var(--yellow);margin-right:5px}
+  /* UP NEXT — long horizontal lineup strip at the top, with a live count */
+  .upnext-bar{display:flex;align-items:center;gap:12px;margin-top:18px;background:linear-gradient(180deg,#22164a,#1a103c);border:1px solid var(--line);border-radius:16px;padding:10px 12px;box-shadow:var(--shadow)}
+  .unb-head{display:flex;align-items:center;gap:9px;flex:none}
+  .unb-label{font-family:"Fredoka",sans-serif;font-weight:600;letter-spacing:.12em;font-size:14px;color:#fff;white-space:nowrap}
+  .unb-count{display:inline-block;font-family:"Share Tech Mono",monospace;font-size:12px;letter-spacing:.06em;color:#0b2b29;background:var(--cyan);border-radius:999px;padding:4px 11px;white-space:nowrap}
+  .unb-count b{font-size:14px}
+  .unb-track{display:flex;gap:8px;align-items:center;flex:1;min-width:0;overflow-x:auto;padding:4px 2px;scrollbar-width:thin}
+  .unb-empty{color:var(--muted);font-weight:700;font-size:13.5px;white-space:nowrap}
+  .unb-chip{flex:none;display:inline-flex;align-items:center;gap:8px;background:#120a2a;border:1px solid var(--line);color:#fff;border-radius:999px;padding:6px 13px 6px 7px;font-family:inherit;font-weight:800;font-size:13.5px;transition:transform .2s var(--ease-spring),background-color .2s ease,border-color .2s ease}
+  .unb-chip:hover{transform:translateY(-2px);border-color:var(--pink)}
+  .unb-chip:active{transform:scale(.96)}
+  .unb-chip .pos{font-family:"Share Tech Mono",monospace;background:var(--pink);color:#fff;border-radius:999px;min-width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:12.5px;padding:0 5px}
+  .unb-chip .code{font-family:"Share Tech Mono",monospace;color:var(--yellow);font-weight:400;font-size:13px}
+  .unb-next{flex:none;min-height:44px;padding:9px 16px;font-size:14.5px;border-radius:12px}
+  .unb-next[disabled]{opacity:.45;cursor:default;box-shadow:none}
 </style>
 </head>
 <style>
@@ -314,7 +373,11 @@
     .now-meta h2{font-size:22px}
     .controls{gap:8px;margin-top:12px}
     .ctl{min-height:54px;font-size:16px;padding:12px 10px;border-radius:13px}
-    .upnext-strip{font-size:13px;padding:9px 10px}
+    .upnext-bar{gap:8px;padding:8px 10px;margin-top:14px;flex-wrap:wrap}
+    .unb-track{order:3;flex-basis:100%}
+    .unb-label{font-size:12.5px}
+    .unb-empty{font-size:12.5px}
+    .unb-next{min-height:40px;padding:8px 12px;font-size:13px;margin-left:auto}
     .layout{gap:16px;margin-top:20px}
     .songbook,.queue,.about{padding:14px}
     .panel-head h2{font-size:22px}
@@ -365,6 +428,18 @@
 
 <main class="wrap" id="top">
 
+  <!-- UP NEXT — the whole lineup, in order, with a live count -->
+  <div class="upnext-bar" id="upNextBar">
+    <div class="unb-head">
+      <span class="unb-label">🎶 UP NEXT</span>
+      <span class="unb-count" id="unbCount"><b>0</b> QUEUED</span>
+    </div>
+    <div class="unb-track" id="unbTrack">
+      <span class="unb-empty" id="unbEmpty">No songs lined up yet — reserve from the keypad or the songbook and they'll queue up here, in order.</span>
+    </div>
+    <button class="ctl ctl-next unb-next" id="unbNext" type="button" disabled>⏭ PLAY NEXT</button>
+  </div>
+
   <!-- VIDEOKE MACHINE -->
   <section class="machine" id="machine" aria-label="MELOSCOOP videoke machine">
     <i class="screw tl" aria-hidden="true"></i><i class="screw tr" aria-hidden="true"></i>
@@ -385,9 +460,28 @@
         <span class="np">NOW PLAYING</span>
         <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
         <span class="led screen-code"><small>SONG NO.</small><span id="screenCode">1001</span></span>
+        <button class="tv-full-btn" id="tvFull" type="button" aria-label="Toggle fullscreen TV mode">⛶ FULL</button>
       </div>
       <div class="screen">
-        <iframe id="stageFrame" src="https://www.youtube.com/embed/NDXjhD_wVvA?rel=0" title="Karaoke player — Araw na Ayaw by Jeo and Gehlee" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+        <div id="stagePlayer"></div>
+        <div class="click-layer" id="clickLayer" aria-hidden="true"></div>
+        <div class="flash" id="flashIcon" aria-hidden="true">▶</div>
+        <button class="big-play" id="bigPlay" type="button" aria-label="Play Araw na Ayaw">
+          <span class="bp-disc" aria-hidden="true">▶</span>
+          <span class="bp-txt" id="bigPlayTxt">TAP TO SING</span>
+        </button>
+        <div class="ctrl-bar" id="ctrlBar">
+          <button class="cbtn cbtn-play" id="cPlay" type="button" aria-label="Play">▶</button>
+          <button class="cbtn" id="cNext" type="button" aria-label="Next song">⏭</button>
+          <span class="ctime" id="cTime">0:00 / 0:00</span>
+          <div class="prog" id="cProg" role="slider" tabindex="0" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="prog-buf" id="cBuf"></div>
+            <div class="prog-fill" id="cFill"></div>
+            <div class="prog-knob" id="cKnob"></div>
+          </div>
+          <button class="cbtn" id="cMute" type="button" aria-label="Mute or unmute">🔊</button>
+          <button class="cbtn" id="cFull" type="button" aria-label="Fullscreen">⛶</button>
+        </div>
       </div>
       <div class="marquee" aria-hidden="true">
         <div class="marquee-track" id="marqueeTrack">
@@ -446,10 +540,6 @@
           <div class="fn"><span class="fn-label">TEMPO</span><button class="fn-btn" type="button" data-fn="tempo" data-dir="-1" aria-label="Tempo down">−</button><span class="led fn-val" id="fnTempo">0</span><button class="fn-btn" type="button" data-fn="tempo" data-dir="1" aria-label="Tempo up">+</button></div>
           <div class="fn"><span class="fn-label">MIC VOL</span><button class="fn-btn" type="button" data-fn="mic" data-dir="-1" aria-label="Mic volume down">−</button><span class="led fn-val" id="fnMic">7</span><button class="fn-btn" type="button" data-fn="mic" data-dir="1" aria-label="Mic volume up">+</button></div>
           <div class="fn"><span class="fn-label">ECHO</span><button class="fn-btn" type="button" data-fn="echo" data-dir="-1" aria-label="Echo down">−</button><span class="led fn-val" id="fnEcho">5</span><button class="fn-btn" type="button" data-fn="echo" data-dir="1" aria-label="Echo up">+</button></div>
-        </div>
-        <div class="upnext-strip" id="upNextStrip">
-          <span class="lbl">UP NEXT</span>
-          <span id="upNextText">Nothing reserved yet — punch a song number on the keypad or reserve from the songbook.</span>
         </div>
       </div>
 
@@ -623,7 +713,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script>
 (function(){
-  var frame = document.getElementById('stageFrame');
   var screenCode = document.getElementById('screenCode');
   var nowCode = document.getElementById('nowCode');
   var nowTitle = document.getElementById('nowTitle');
@@ -668,8 +757,17 @@
 
   function loadSong(song, autoplay){
     current = song;
-    frame.src = 'https://www.youtube.com/embed/' + song.id + '?rel=0' + (autoplay ? '&autoplay=1' : '');
-    frame.title = 'Karaoke player — ' + song.title;
+    if (player && playerReady){
+      if (autoplay) player.loadVideoById(song.id); else player.cueVideoById(song.id);
+    } else if (fallbackFrame){
+      fallbackFrame.src = 'https://www.youtube.com/embed/' + song.id + '?rel=0' + (autoplay ? '&autoplay=1' : '');
+      fallbackFrame.title = 'Karaoke player — ' + song.title;
+      bigPlay.classList.toggle('hide', !!autoplay);
+      if (!autoplay) bigPlayTxt.textContent = 'TAP TO SING';
+    } else {
+      pendingSong = song; pendingAutoplay = autoplay;
+    }
+    bigPlay.setAttribute('aria-label', 'Play ' + song.title);
     screenCode.textContent = song.code;
     nowCode.textContent = song.code;
     nowTitle.textContent = song.title;
@@ -690,13 +788,193 @@
     document.getElementById('machine').scrollIntoView({behavior: reducedMotion ? 'auto' : 'smooth', block:'start'});
   }
 
+  /* ---------- CUSTOM PLAYER — YouTube API with controls=0, so none of
+     YouTube's own overlay UI (title bar, branding, More videos) shows.
+     All buttons, the seek bar and autoplay are ours. ---------- */
+  var scr = document.querySelector('.screen');
+  var clickLayer = document.getElementById('clickLayer');
+  var bigPlay = document.getElementById('bigPlay');
+  var bigPlayTxt = document.getElementById('bigPlayTxt');
+  var flashIcon = document.getElementById('flashIcon');
+  var cPlay = document.getElementById('cPlay');
+  var cNext = document.getElementById('cNext');
+  var cTime = document.getElementById('cTime');
+  var cProg = document.getElementById('cProg');
+  var cBuf = document.getElementById('cBuf');
+  var cFill = document.getElementById('cFill');
+  var cKnob = document.getElementById('cKnob');
+  var cMute = document.getElementById('cMute');
+  var cFull = document.getElementById('cFull');
+  var player = null, playerReady = false, playerState = -1;
+  var pendingSong = null, pendingAutoplay = false;
+  var fallbackFrame = null;
+
+  function fmtTime(t){ t = Math.max(0, Math.floor(t || 0)); var m = Math.floor(t / 60), s = t % 60; return m + ':' + (s < 10 ? '0' : '') + s; }
+  function flash(sym){
+    if (reducedMotion) return;
+    flashIcon.textContent = sym;
+    flashIcon.classList.remove('go');
+    void flashIcon.offsetWidth;
+    flashIcon.classList.add('go');
+  }
+  var idleTimer = null;
+  function pokeUI(){
+    scr.classList.remove('ui-idle');
+    if (idleTimer) clearTimeout(idleTimer);
+    if (playerState === 1){
+      idleTimer = setTimeout(function(){ scr.classList.add('ui-idle'); }, 2800);
+    }
+  }
+  scr.addEventListener('mousemove', pokeUI);
+  scr.addEventListener('touchstart', pokeUI, {passive:true});
+
+  function setPlayingUI(playing){
+    cPlay.textContent = playing ? '❚❚' : '▶';
+    cPlay.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+    bigPlay.classList.toggle('hide', playing);
+    if (playing){ pokeUI(); }
+    else { scr.classList.remove('ui-idle'); if (idleTimer) clearTimeout(idleTimer); }
+  }
+
+  function onPlayerStateChange(e){
+    playerState = e.data; /* 0 ended · 1 playing · 2 paused · 3 buffering · 5 cued */
+    if (e.data === 1){ setPlayingUI(true); }
+    else if (e.data === 2){ bigPlayTxt.textContent = 'RESUME'; setPlayingUI(false); }
+    else if (e.data === 5){ bigPlayTxt.textContent = 'TAP TO SING'; setPlayingUI(false); }
+    else if (e.data === 0){
+      setPlayingUI(false);
+      if (queue.length){ playNext(); } /* auto-advance to the next reserved song */
+      else { bigPlayTxt.textContent = 'SONG DONE — ENCORE?'; }
+    }
+  }
+  function syncMuteIcon(){ if (player && playerReady && player.isMuted) cMute.textContent = player.isMuted() ? '🔇' : '🔊'; }
+  function onPlayerReady(){
+    playerReady = true;
+    syncMuteIcon();
+    if (pendingSong){
+      var s = pendingSong, ap = pendingAutoplay;
+      pendingSong = null;
+      if (ap) player.loadVideoById(s.id); else player.cueVideoById(s.id);
+    }
+  }
+  window.onYouTubeIframeAPIReady = function(){
+    if (fallbackFrame || typeof YT === 'undefined' || !YT.Player) return;
+    player = new YT.Player('stagePlayer', {
+      width: '100%', height: '100%',
+      videoId: current.id,
+      playerVars: { autoplay: 0, controls: 0, disablekb: 1, fs: 0, iv_load_policy: 3, modestbranding: 1, playsinline: 1, rel: 0, cc_load_policy: 0 },
+      events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange }
+    });
+  };
+  var apiTag = document.createElement('script');
+  apiTag.src = 'https://www.youtube.com/iframe_api';
+  apiTag.onerror = function(){ useFallback(); };
+  document.head.appendChild(apiTag);
+  setTimeout(function(){ if (!playerReady) useFallback(); }, 5000);
+
+  /* If the API can't load at all, fall back to a plain embed so songs still play. */
+  function useFallback(){
+    if (fallbackFrame || playerReady) return;
+    if (player && player.destroy){ try { player.destroy(); } catch(err){} player = null; }
+    scr.classList.add('no-api');
+    fallbackFrame = document.createElement('iframe');
+    fallbackFrame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+    fallbackFrame.allowFullscreen = true;
+    fallbackFrame.referrerPolicy = 'strict-origin-when-cross-origin';
+    fallbackFrame.title = 'Karaoke player — ' + current.title;
+    fallbackFrame.src = 'https://www.youtube.com/embed/' + current.id + '?rel=0' + (pendingAutoplay ? '&autoplay=1' : '');
+    scr.insertBefore(fallbackFrame, clickLayer);
+    if (pendingAutoplay) bigPlay.classList.add('hide');
+  }
+
+  function togglePlay(){
+    if (player && playerReady){
+      if (playerState === 1){ player.pauseVideo(); flash('❚❚'); }
+      else { player.playVideo(); flash('▶'); }
+    } else if (fallbackFrame){
+      fallbackFrame.src = 'https://www.youtube.com/embed/' + current.id + '?rel=0&autoplay=1';
+      bigPlay.classList.add('hide');
+    }
+    pokeUI();
+  }
+  clickLayer.addEventListener('click', togglePlay);
+  bigPlay.addEventListener('click', togglePlay);
+  cPlay.addEventListener('click', togglePlay);
+  cNext.addEventListener('click', function(){ playNext(); });
+  cMute.addEventListener('click', function(){
+    if (!(player && playerReady)) return;
+    if (player.isMuted()) player.unMute(); else player.mute();
+    syncMuteIcon(); pokeUI();
+  });
+  /* Fullscreen takes the whole TV — frame, NOW PLAYING header, LED song
+     number, equalizer and ticker stay around the video, like a real TV. */
+  var tvEl = document.querySelector('.tv');
+  var tvFullBtn = document.getElementById('tvFull');
+  function toggleFullscreen(){
+    if (document.fullscreenElement || document.webkitFullscreenElement){
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    } else if (tvEl.requestFullscreen){
+      var p = tvEl.requestFullscreen();
+      if (p && p.catch) p.catch(function(){});
+    } else if (tvEl.webkitRequestFullscreen){ tvEl.webkitRequestFullscreen(); }
+    else { showToast('Fullscreen is not available on this device'); }
+    pokeUI();
+  }
+  cFull.addEventListener('click', toggleFullscreen);
+  tvFullBtn.addEventListener('click', toggleFullscreen);
+  document.addEventListener('fullscreenchange', function(){
+    tvFullBtn.textContent = document.fullscreenElement ? '⛶ EXIT' : '⛶ FULL';
+  });
+
+  /* Progress readout + seek bar */
+  var seeking = false;
+  function paintProgress(){
+    if (!(player && playerReady) || !player.getDuration) return;
+    var d = player.getDuration() || 0;
+    var t = player.getCurrentTime() || 0;
+    var pct = d ? (t / d * 100) : 0;
+    cFill.style.width = pct + '%';
+    cKnob.style.left = pct + '%';
+    cBuf.style.width = ((player.getVideoLoadedFraction() || 0) * 100) + '%';
+    cTime.textContent = fmtTime(t) + ' / ' + fmtTime(d);
+    cProg.setAttribute('aria-valuenow', Math.round(pct));
+  }
+  setInterval(paintProgress, 250);
+  function seekRatio(e){
+    var r = cProg.getBoundingClientRect();
+    return Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+  }
+  function seekEvent(e){
+    var d = player.getDuration() || 0;
+    if (d) player.seekTo(seekRatio(e) * d, true);
+  }
+  cProg.addEventListener('pointerdown', function(e){
+    if (!(player && playerReady)) return;
+    seeking = true;
+    try { cProg.setPointerCapture(e.pointerId); } catch(err){}
+    seekEvent(e); pokeUI();
+  });
+  cProg.addEventListener('pointermove', function(e){ if (seeking && player && playerReady) seekEvent(e); });
+  cProg.addEventListener('pointerup', function(){ seeking = false; });
+  cProg.addEventListener('pointercancel', function(){ seeking = false; });
+  cProg.addEventListener('keydown', function(e){
+    if (!(player && playerReady)) return;
+    var t = player.getCurrentTime() || 0;
+    if (e.key === 'ArrowRight'){ player.seekTo(t + 5, true); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft'){ player.seekTo(Math.max(0, t - 5), true); e.preventDefault(); }
+  });
+
   /* ---------- QUEUE ---------- */
   var queueList = document.getElementById('queueList');
   var queueEmpty = document.getElementById('queueEmpty');
   var clearBtn = document.getElementById('clearQueue');
   var nextBtn2 = document.getElementById('btnNext2');
   var topQueueCount = document.getElementById('topQueueCount');
-  var upNextStrip = document.getElementById('upNextStrip');
+  var unbTrack = document.getElementById('unbTrack');
+  var unbEmpty = document.getElementById('unbEmpty');
+  var unbCount = document.getElementById('unbCount');
+  var unbNext = document.getElementById('unbNext');
 
   function syncQueueUI(){
     rows.forEach(function(r){
@@ -736,27 +1014,25 @@
     clearBtn.disabled = !has;
     nextBtn2.disabled = !has;
     topQueueCount.textContent = queue.length;
-    upNextStrip.querySelectorAll('.chip').forEach(function(c){ c.remove(); });
-    var txt = document.getElementById('upNextText');
-    if (has){
-      txt.style.display = 'none';
-      queue.slice(0,4).forEach(function(id){
-        var s = byId(id); if (!s) return;
-        var chip = document.createElement('span');
-        chip.className = 'chip';
-        chip.innerHTML = '<b>' + s.code + '</b>';
-        chip.appendChild(document.createTextNode(s.title));
-        upNextStrip.appendChild(chip);
+    /* Top strip: the whole lineup, in order, with a clear count */
+    unbNext.disabled = !has;
+    unbCount.innerHTML = '<b>' + queue.length + '</b> ' + (queue.length === 0 ? 'QUEUED' : (queue.length === 1 ? 'SONG QUEUED' : 'SONGS QUEUED'));
+    unbTrack.querySelectorAll('.unb-chip').forEach(function(c){ c.remove(); });
+    unbEmpty.style.display = has ? 'none' : '';
+    queue.forEach(function(id, idx){
+      var s = byId(id); if (!s) return;
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'unb-chip';
+      chip.innerHTML = '<span class="pos">' + (idx+1) + '</span><span class="code">#' + s.code + '</span>';
+      chip.appendChild(document.createTextNode(s.title));
+      chip.setAttribute('aria-label', 'Play ' + s.title + ' now');
+      chip.addEventListener('click', function(){
+        queue.splice(idx,1);
+        loadSong(s, true); scrollToMachine();
       });
-      if (queue.length > 4){
-        var more = document.createElement('span');
-        more.className = 'chip'; more.textContent = '+' + (queue.length-4) + ' more';
-        upNextStrip.appendChild(more);
-      }
-    } else {
-      txt.style.display = '';
-      txt.textContent = 'Nothing reserved yet — punch a song number on the keypad or reserve from the songbook.';
-    }
+      unbTrack.appendChild(chip);
+    });
   }
 
   function addToQueue(song, silent){
@@ -767,6 +1043,10 @@
       var last = items[items.length - 1];
       if (last) gsap.fromTo(last, {opacity:0, x:26, scale:.95}, {opacity:1, x:0, scale:1, duration:.45, ease:'back.out(2.2)', clearProps:'transform,opacity'});
       gsap.fromTo('#topQueueCount', {scale:1.6}, {scale:1, duration:.45, ease:'back.out(3)', clearProps:'transform'});
+      var chips = unbTrack.querySelectorAll('.unb-chip');
+      var lastChip = chips[chips.length - 1];
+      if (lastChip) gsap.fromTo(lastChip, {opacity:0, scale:.75}, {opacity:1, scale:1, duration:.4, ease:'back.out(2.5)', clearProps:'transform,opacity'});
+      gsap.fromTo('#unbCount', {scale:1.35}, {scale:1, duration:.4, ease:'back.out(3)', clearProps:'transform'});
     }
     if (!silent) showToast('<b>#' + song.code + ' ' + song.title + '</b> &nbsp;added to Up Next 🎶');
   }
@@ -785,6 +1065,7 @@
   document.getElementById('btnPlay').addEventListener('click', function(){ loadSong(current, true); });
   document.getElementById('btnNext').addEventListener('click', playNext);
   nextBtn2.addEventListener('click', playNext);
+  unbNext.addEventListener('click', playNext);
   document.getElementById('btnQueueCurrent').addEventListener('click', function(){ addToQueue(current); });
   clearBtn.addEventListener('click', function(){ queue = []; syncQueueUI(); showToast('Up Next cleared'); });
 
@@ -934,7 +1215,8 @@
   /* ---------- ENTRANCE ---------- */
   if (motionOK()){
     var tl = gsap.timeline({defaults:{ease:'power3.out'}});
-    tl.from('.machine', {y:30, opacity:0, duration:.6, clearProps:'transform,opacity'})
+    tl.from('.upnext-bar', {y:22, opacity:0, duration:.5, clearProps:'transform,opacity'})
+      .from('.machine', {y:30, opacity:0, duration:.6, clearProps:'transform,opacity'}, '-=.25')
       .from('.tv', {y:18, opacity:0, duration:.5, clearProps:'transform,opacity'}, '-=.3')
       .from('.deck-panel', {y:20, opacity:0, duration:.45, stagger:.1, clearProps:'transform,opacity'}, '-=.25')
       .from('.song', {y:22, opacity:0, duration:.45, stagger:.07, clearProps:'transform,opacity'}, '-=.2')
