@@ -184,7 +184,15 @@
   .now-meta p{margin:3px 0 0;color:var(--muted);font-weight:800;font-size:14px}
   .now-meta p .dot{color:var(--pink)}
   .controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px}
-  @media(min-width:680px){.controls{grid-template-columns:1.25fr 1fr auto auto}}
+  @media(min-width:680px){.controls{grid-template-columns:1.25fr 1fr 1fr auto auto}}
+  .live-status{margin:12px 0 0;font-weight:800;font-size:13.5px;color:var(--cyan)}
+  .live-status.err{color:#ff8a80}
+  .load-more{margin-top:16px;text-align:center}
+  .load-more-btn{min-width:230px}
+  .load-more-btn[disabled]{opacity:.55;cursor:default;box-shadow:none}
+  .load-more-msg{margin:9px 0 0;color:var(--muted);font-weight:700;font-size:13px}
+  .load-more-msg:empty{display:none}
+  #scrollSentinel{height:2px}
   .ctl{display:inline-flex;align-items:center;justify-content:center;gap:10px;border:0;border-radius:15px;font-family:"Fredoka",sans-serif;font-weight:600;letter-spacing:.04em;min-height:58px;padding:13px 18px;font-size:18.5px;text-decoration:none;text-align:center;
     box-shadow:0 4px 0 rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.3);transition:transform .12s var(--ease-spring),box-shadow .2s ease,background-color .2s ease}
   .ctl:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.45)}
@@ -535,7 +543,7 @@
     <div class="topbar-spacer"></div>
     <a class="top-queue" href="#queuePanel">Up Next <b id="topQueueCount">0</b></a>
     <button class="top-mode" id="modeBtn" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span>Link</span></button>
-    <a class="top-link" href="https://www.youtube.com/@phoebebuzz" target="_blank" rel="noopener">YouTube ↗</a>
+    <a class="top-link" href="https://www.youtube.com/@phoebebuzz" target="_blank" rel="noopener">YouTube <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
   </div>
 </div>
 
@@ -578,6 +586,7 @@
           <span class="bp-txt" id="bigPlayTxt">TAP TO SING</span>
         </button>
         <div class="ctrl-bar" id="ctrlBar">
+          <button class="cbtn" id="cPrev" type="button" aria-label="Previous song"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="19 4 9 12 19 20 19 4"/><rect x="4" y="4" width="2.6" height="16" rx="1"/></svg></button>
           <button class="cbtn cbtn-play" id="cPlay" type="button" aria-label="Play"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="7 4 20 12 7 20 7 4"/></svg></button>
           <button class="cbtn" id="cNext" type="button" aria-label="Next song"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17.5" y="4" width="2.6" height="16" rx="1"/></svg></button>
           <span class="ctime" id="cTime">0:00 / 0:00</span>
@@ -614,15 +623,17 @@
           <span class="so-now" id="remoteNow">Waiting for the Screen…</span>
           <div class="so-controls">
             <button class="ctl ctl-play" id="remoteToggle" type="button"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="7 4 20 12 7 20 7 4"/></svg> PLAY</button>
+            <button class="ctl ctl-next" id="remotePrev" type="button"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="19 4 9 12 19 20 19 4"/><rect x="4" y="4" width="2.6" height="16" rx="1"/></svg> PREV</button>
             <button class="ctl ctl-next" id="remoteNext" type="button"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17.5" y="4" width="2.6" height="16" rx="1"/></svg> NEXT</button>
+            <button class="ctl ctl-yt" id="remoteFs" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg> FULLSCREEN</button>
           </div>
           <span class="so-note">Search, reserve and punch song numbers below — the Screen updates instantly.</span>
         </div>
       </div>
       <div class="marquee" aria-hidden="true">
         <div class="marquee-track" id="marqueeTrack">
-          <span id="marqueeA">♪ NOW PLAYING — #1001 ARAW NA AYAW · JEO &amp; GEHLEE ♪ RESERVE YOUR SONG ON THE KEYPAD ♪ MELOSCOOP VIDEOKE ♪</span>
-          <span id="marqueeB">♪ NOW PLAYING — #1001 ARAW NA AYAW · JEO &amp; GEHLEE ♪ RESERVE YOUR SONG ON THE KEYPAD ♪ MELOSCOOP VIDEOKE ♪</span>
+          <span id="marqueeA">NOW PLAYING — #1001 ARAW NA AYAW · JEO &amp; GEHLEE RESERVE YOUR SONG ON THE KEYPAD MELOSCOOP VIDEOKE</span>
+          <span id="marqueeB">NOW PLAYING — #1001 ARAW NA AYAW · JEO &amp; GEHLEE RESERVE YOUR SONG ON THE KEYPAD MELOSCOOP VIDEOKE</span>
         </div>
       </div>
     </div>
@@ -667,15 +678,16 @@
         </div>
         <div class="controls">
           <button class="ctl ctl-play" id="btnPlay" type="button"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="7 4 20 12 7 20 7 4"/></svg>&nbsp; PLAY</button>
+          <button class="ctl ctl-next" id="btnPrev" type="button"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="19 4 9 12 19 20 19 4"/><rect x="4" y="4" width="2.6" height="16" rx="1"/></svg>&nbsp; PREV</button>
           <button class="ctl ctl-next" id="btnNext" type="button"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17.5" y="4" width="2.6" height="16" rx="1"/></svg>&nbsp; NEXT</button>
           <button class="ctl ctl-queue" id="btnQueueCurrent" type="button">+ Reserve</button>
-          <a class="ctl ctl-yt" id="nowYtLink" href="https://www.youtube.com/watch?v=NDXjhD_wVvA" target="_blank" rel="noopener">YouTube ↗</a>
+          <a class="ctl ctl-yt" id="nowYtLink" href="https://www.youtube.com/watch?v=NDXjhD_wVvA" target="_blank" rel="noopener">YouTube <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
         </div>
         <div class="fn-grid" aria-label="Sound controls">
-          <div class="fn"><span class="fn-label">KEY</span><button class="fn-btn" type="button" data-fn="key" data-dir="-1" aria-label="Key down">−</button><span class="led fn-val" id="fnKey">0</span><button class="fn-btn" type="button" data-fn="key" data-dir="1" aria-label="Key up">+</button></div>
-          <div class="fn"><span class="fn-label">TEMPO</span><button class="fn-btn" type="button" data-fn="tempo" data-dir="-1" aria-label="Tempo down">−</button><span class="led fn-val" id="fnTempo">0</span><button class="fn-btn" type="button" data-fn="tempo" data-dir="1" aria-label="Tempo up">+</button></div>
-          <div class="fn"><span class="fn-label">MIC VOL</span><button class="fn-btn" type="button" data-fn="mic" data-dir="-1" aria-label="Mic volume down">−</button><span class="led fn-val" id="fnMic">7</span><button class="fn-btn" type="button" data-fn="mic" data-dir="1" aria-label="Mic volume up">+</button></div>
-          <div class="fn"><span class="fn-label">ECHO</span><button class="fn-btn" type="button" data-fn="echo" data-dir="-1" aria-label="Echo down">−</button><span class="led fn-val" id="fnEcho">5</span><button class="fn-btn" type="button" data-fn="echo" data-dir="1" aria-label="Echo up">+</button></div>
+          <div class="fn"><span class="fn-label">KEY</span><button class="fn-btn" type="button" data-fn="key" data-dir="-1" aria-label="Key down">-</button><span class="led fn-val" id="fnKey">0</span><button class="fn-btn" type="button" data-fn="key" data-dir="1" aria-label="Key up">+</button></div>
+          <div class="fn"><span class="fn-label">TEMPO</span><button class="fn-btn" type="button" data-fn="tempo" data-dir="-1" aria-label="Tempo down">-</button><span class="led fn-val" id="fnTempo">0</span><button class="fn-btn" type="button" data-fn="tempo" data-dir="1" aria-label="Tempo up">+</button></div>
+          <div class="fn"><span class="fn-label">MIC VOL</span><button class="fn-btn" type="button" data-fn="mic" data-dir="-1" aria-label="Mic volume down">-</button><span class="led fn-val" id="fnMic">7</span><button class="fn-btn" type="button" data-fn="mic" data-dir="1" aria-label="Mic volume up">+</button></div>
+          <div class="fn"><span class="fn-label">ECHO</span><button class="fn-btn" type="button" data-fn="echo" data-dir="-1" aria-label="Echo down">-</button><span class="led fn-val" id="fnEcho">5</span><button class="fn-btn" type="button" data-fn="echo" data-dir="1" aria-label="Echo up">+</button></div>
         </div>
       </div>
 
@@ -690,32 +702,17 @@
       <div class="panel-head">
         <div>
           <h2><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> Songbook</h2>
-          <p>Every MELOSCOOP karaoke, with its videoke song number.</p>
+          <p>Search any song — karaoke versions pulled live from all of YouTube, each with its videoke song number.</p>
         </div>
         <span class="count-badge" id="songCount">5 songs</span>
       </div>
+      <p class="live-status" id="liveStatus" role="status">Starter list: MELOSCOOP favorites. Search above to pull karaoke from all of YouTube.</p>
 
       <div class="search">
         <span class="icon" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg></span>
-        <input id="searchInput" type="search" inputmode="search" autocomplete="off" placeholder="Search title, artist, or song # — try “Lullaby” or 1004" aria-label="Search by title, artist, or song number">
-        <button class="clear" id="searchClear" type="button" aria-label="Clear search">✕</button>
+        <input id="searchInput" type="search" inputmode="search" autocomplete="off" placeholder="Search any song or artist on YouTube — try “Bohemian Rhapsody”" aria-label="Search YouTube for a karaoke song or artist">
+        <button class="clear" id="searchClear" type="button" aria-label="Clear search"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
-      <div class="quick" aria-label="Popular searches">
-        <span>Popular:</span>
-        <button class="quick-chip" data-q="Lullaby" type="button">Lullaby</button>
-        <button class="quick-chip" data-q="Gehlee" type="button">Gehlee</button>
-        <button class="quick-chip" data-q="Jeo" type="button">Jeo</button>
-        <button class="quick-chip" data-q="Araw" type="button">Araw</button>
-        <button class="quick-chip" data-q="1005" type="button">#1005 You and I</button>
-      </div>
-      <div class="filters" role="group" aria-label="Filter by singer">
-        <button class="filter" data-filter="all" aria-pressed="true" type="button">All singers</button>
-        <button class="filter" data-filter="gehlee" aria-pressed="false" type="button">Gehlee</button>
-        <button class="filter" data-filter="jeo" aria-pressed="false" type="button">Jeo</button>
-        <button class="filter" data-filter="ethan" aria-pressed="false" type="button">Ethan</button>
-        <button class="filter" data-filter="cianne" aria-pressed="false" type="button">Cianne</button>
-      </div>
-
       <div class="col-head" aria-hidden="true"><span>SONG #</span><span>TITLE &nbsp;/&nbsp; ARTIST</span><span>ACTIONS</span></div>
 
       <div class="song-list" id="songList">
@@ -804,8 +801,14 @@
 
       <div class="no-results" id="noResults">
         <b>No song found</b>
-        Try a title like “Lullaby”, a singer like “Ethan”, or a number from 1001 to 1005.
+        Try another title or artist — the search looks through karaoke videos across all of YouTube.
       </div>
+
+      <div class="load-more" id="loadMoreWrap" hidden>
+        <button class="ctl ctl-next load-more-btn" id="loadMoreBtn" type="button">LOAD MORE SONGS</button>
+        <p class="load-more-msg" id="loadMoreMsg" role="status"></p>
+      </div>
+      <div id="scrollSentinel" aria-hidden="true"></div>
     </section>
 
     <!-- QUEUE -->
@@ -840,7 +843,7 @@
 
   <footer>
     <p>MELOSCOOP — Daily K-pop • Karaoke<br>
-    Channel: <a href="https://www.youtube.com/@phoebebuzz" target="_blank" rel="noopener">youtube.com/@phoebebuzz</a> • 1.34K subscribers • New karaoke added as they're published.</p>
+    Channel: <a href="https://www.youtube.com/@phoebebuzz" target="_blank" rel="noopener">youtube.com/@phoebebuzz</a> • 1.34K subscribers • Songbook karaoke is searched live across all of YouTube.</p>
   </footer>
 </main>
 
@@ -867,23 +870,38 @@
   var hasGsap = typeof window.gsap !== 'undefined';
   function motionOK(){ return hasGsap && !reducedMotion; }
 
-  var rows = Array.prototype.slice.call(document.querySelectorAll('.song'));
-  var songs = rows.map(function(r){
-    return {
-      code: r.getAttribute('data-code'),
-      id: r.getAttribute('data-id'),
-      title: r.getAttribute('data-title'),
-      artists: r.getAttribute('data-artists'),
-      duration: r.getAttribute('data-duration') || '',
-      row: r
-    };
-  });
-  function byId(id){ for (var i=0;i<songs.length;i++) if (songs[i].id===id) return songs[i]; return null; }
+  var rows = [];
+  var songs = [];
+  /* Every song the machine has ever shown stays resolvable by id, so the
+     queue, history and the Remote keep working when a live search rebuilds
+     the songbook and the song is no longer on the visible page. */
+  var registry = {};
+  function refreshSongs(){
+    rows = Array.prototype.slice.call(document.querySelectorAll('.song'));
+    songs = rows.map(function(r){
+      var id = r.getAttribute('data-id');
+      var s = registry[id];
+      if (!s){ s = { id: id }; registry[id] = s; }
+      s.code = r.getAttribute('data-code');
+      s.title = r.getAttribute('data-title');
+      s.artists = r.getAttribute('data-artists');
+      s.duration = r.getAttribute('data-duration') || '';
+      s.row = r;
+      return s;
+    });
+  }
+  refreshSongs();
+  function byId(id){ if (registry[id]) return registry[id]; for (var i=0;i<songs.length;i++) if (songs[i].id===id) return songs[i]; return null; }
   function byCode(code){ for (var i=0;i<songs.length;i++) if (songs[i].code===code) return songs[i]; return null; }
   function plainArtists(song){ return song.artists.replace(/&amp;/g,'&'); }
+  /* Song titles/artists can come from live YouTube search results, which
+     any uploader controls — anything rendered as HTML must be escaped. */
+  function escapeHtml(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
   var current = songs[0];
   var queue = []; // array of video ids, in order
+  var history = []; // ids of songs played before the current one, for PREV
+  var goingBack = false;
 
   function showToast(html){
     toast.innerHTML = html;
@@ -893,6 +911,10 @@
   }
 
   function loadSong(song, autoplay){
+    if (current && song && current.id !== song.id && !goingBack){
+      history.push(current.id);
+      if (history.length > 50) history.shift();
+    }
     current = song;
     if (player && playerReady){
       if (autoplay) player.loadVideoById(song.id); else player.cueVideoById(song.id);
@@ -908,10 +930,10 @@
     screenCode.textContent = song.code;
     nowCode.textContent = song.code;
     nowTitle.textContent = song.title;
-    nowArtists.innerHTML = song.artists;
+    nowArtists.textContent = plainArtists(song);
     nowDuration.textContent = song.duration ? song.duration : 'Karaoke';
     nowYtLink.href = 'https://www.youtube.com/watch?v=' + song.id;
-    var tick = '♪ NOW PLAYING — #' + song.code + ' ' + song.title.toUpperCase() + ' · ' + plainArtists(song).toUpperCase() + ' ♪ RESERVE YOUR SONG ON THE KEYPAD ♪ MELOSCOOP VIDEOKE ♪';
+    var tick = 'NOW PLAYING — #' + song.code + ' ' + song.title.toUpperCase() + ' · ' + plainArtists(song).toUpperCase() + ' RESERVE YOUR SONG ON THE KEYPAD MELOSCOOP VIDEOKE';
     marqueeA.textContent = tick;
     marqueeB.textContent = tick;
     rows.forEach(function(r){ r.classList.toggle('playing', r.getAttribute('data-id') === song.id); });
@@ -1047,6 +1069,7 @@
   bigPlay.addEventListener('click', togglePlay);
   cPlay.addEventListener('click', togglePlay);
   cNext.addEventListener('click', function(){ playNext(); });
+  document.getElementById('cPrev').addEventListener('click', function(){ playPrev(); });
   cMute.addEventListener('click', function(){
     if (!(player && playerReady)) return;
     if (player.isMuted()) player.unMute(); else player.mute();
@@ -1071,6 +1094,7 @@
   tvFullBtn.addEventListener('click', toggleFullscreen);
   document.addEventListener('fullscreenchange', function(){
     tvFullBtn.innerHTML = document.fullscreenElement ? (ICON_MIN + ' EXIT') : (ICON_MAX + ' FULL');
+    broadcastState();
   });
 
   /* Progress readout + seek bar */
@@ -1131,7 +1155,7 @@
       var qb = r.querySelector('[data-action="queue"]');
       if (qb){
         if (id === current.id){ qb.disabled = false; qb.textContent = '+ Reserve again'; }
-        else if (inQ){ qb.disabled = true; qb.textContent = '✓ Reserved'; }
+        else if (inQ){ qb.disabled = true; qb.textContent = 'Reserved'; }
         else { qb.disabled = false; qb.textContent = '+ Reserve'; }
       }
     });
@@ -1142,8 +1166,8 @@
       li.className = 'q-item';
       li.innerHTML = '<span class="q-pos">' + (idx+1) + '</span>' +
         '<div class="q-info"><b></b><span><code>#' + s.code + '</code> • </span></div>' +
-        '<button class="q-btn q-go" type="button" aria-label="Play ' + s.title + ' now">' + ICON_PLAY + '</button>' +
-        '<button class="q-btn q-rm" type="button" aria-label="Remove ' + s.title + ' from queue">✕</button>';
+        '<button class="q-btn q-go" type="button" aria-label="Play ' + escapeHtml(s.title) + ' now">' + ICON_PLAY + '</button>' +
+        '<button class="q-btn q-rm" type="button" aria-label="Remove ' + escapeHtml(s.title) + ' from queue"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
       li.querySelector('.q-info b').textContent = s.title;
       li.querySelector('.q-info span').appendChild(document.createTextNode(plainArtists(s)));
       li.querySelector('.q-go').addEventListener('click', function(){
@@ -1154,7 +1178,7 @@
       li.querySelector('.q-rm').addEventListener('click', function(){
         if (linkMode === 'remote'){ sendCmd({t:'removeAt', i: idx}); return; }
         queue.splice(idx,1); syncQueueUI();
-        showToast('Removed <b>' + s.title + '</b> from Up Next');
+        showToast('Removed <b>' + escapeHtml(s.title) + '</b> from Up Next');
       });
       queueList.appendChild(li);
     });
@@ -1190,7 +1214,7 @@
   }
 
   function addToQueue(song, silent){
-    if (linkMode === 'remote'){ sendCmd({t:'queue', id: song.id}); if (!silent) showToast('<b>#' + song.code + ' ' + song.title + '</b> &nbsp;sent to the Screen'); return; }
+    if (linkMode === 'remote'){ sendCmd({t:'queue', id: song.id}); if (!silent) showToast('<b>#' + song.code + ' ' + escapeHtml(song.title) + '</b> &nbsp;sent to the Screen'); return; }
     queue.push(song.id);
     syncQueueUI();
     if (motionOK()){
@@ -1203,7 +1227,7 @@
       if (lastChip) gsap.fromTo(lastChip, {opacity:0, scale:.75}, {opacity:1, scale:1, duration:.4, ease:'back.out(2.5)', clearProps:'transform,opacity'});
       gsap.fromTo('#unbCount', {scale:1.35}, {scale:1, duration:.4, ease:'back.out(3)', clearProps:'transform'});
     }
-    if (!silent) showToast('<b>#' + song.code + ' ' + song.title + '</b> &nbsp;added to Up Next');
+    if (!silent) showToast('<b>#' + song.code + ' ' + escapeHtml(song.title) + '</b> &nbsp;added to Up Next');
   }
 
   function playNext(){
@@ -1217,9 +1241,35 @@
     loadSong(next, true); if (!suppressScroll) scrollToMachine();
   }
 
+  /* PREV: back through the play history first (songs actually sung before
+     this one, including ones picked from the queue); if there is no
+     history yet, step to the song before this one in the songbook. */
+  function playPrev(){
+    if (linkMode === 'remote'){ sendCmd({t:'prev'}); return; }
+    var s = null;
+    while (history.length && !s){
+      var hid = history.pop();
+      if (hid !== current.id) s = byId(hid);
+    }
+    if (!s && songs.length > 1){
+      var idx = songs.indexOf(current);
+      var cand = songs[(idx - 1 + songs.length) % songs.length];
+      if (cand && cand !== current) s = cand;
+    }
+    if (s){
+      goingBack = true;
+      loadSong(s, true);
+      goingBack = false;
+      if (!suppressScroll) scrollToMachine();
+    } else {
+      showToast('No previous song yet');
+    }
+  }
+
   /* ---------- TRANSPORT ---------- */
   document.getElementById('btnPlay').addEventListener('click', function(){ if (linkMode === 'remote'){ sendCmd({t:'play', id: current.id}); return; } loadSong(current, true); });
   document.getElementById('btnNext').addEventListener('click', playNext);
+  document.getElementById('btnPrev').addEventListener('click', playPrev);
   nextBtn2.addEventListener('click', playNext);
   unbNext.addEventListener('click', playNext);
   document.getElementById('btnQueueCurrent').addEventListener('click', function(){ addToQueue(current); });
@@ -1264,7 +1314,7 @@
     if (!padBuffer) padDefaultMsg(); else renderPad('ENTER SONG NO. THEN PRESS PLAY', false);
   });
   function padLookup(){
-    if (!padBuffer){ renderPad('PUNCH A SONG NO. FIRST — 1001 TO 1005', true); return null; }
+    if (!padBuffer){ renderPad('PUNCH A SONG NO. FIRST', true); return null; }
     var s = findPadSong();
     if (!s){ renderPad('NO SONG #' + padBuffer + ' IN THE SONGBOOK', true); return null; }
     return s;
@@ -1274,7 +1324,7 @@
     if (linkMode === 'remote'){ sendCmd({t:'play', id: s.id}); padBuffer = ''; renderPad('SENT TO SCREEN — #' + s.code + ' ' + s.title.toUpperCase(), false); return; }
     var qi = queue.indexOf(s.id); if (qi !== -1) queue.splice(qi,1);
     loadSong(s, true);
-    padBuffer = ''; renderPad('♪ NOW PLAYING #' + s.code + ' ' + s.title.toUpperCase(), false);
+    padBuffer = ''; renderPad('NOW PLAYING #' + s.code + ' ' + s.title.toUpperCase(), false);
   });
   document.getElementById('padReserve').addEventListener('click', function(){
     var s = padLookup(); if (!s) return;
@@ -1310,7 +1360,7 @@
   });
 
   /* ---------- SONGBOOK ACTIONS ---------- */
-  rows.forEach(function(r){
+  function bindRow(r){
     r.querySelector('[data-action="play"]').addEventListener('click', function(){
       var s = byId(r.getAttribute('data-id'));
       if (linkMode === 'remote'){ sendCmd({t:'play', id: s.id}); scrollToMachine(); return; }
@@ -1320,7 +1370,8 @@
     r.querySelector('[data-action="queue"]').addEventListener('click', function(){
       addToQueue(byId(r.getAttribute('data-id')));
     });
-  });
+  }
+  rows.forEach(bindRow);
 
   /* ---------- SEARCH + FILTER ---------- */
   var searchInput = document.getElementById('searchInput');
@@ -1347,28 +1398,227 @@
       if (vis.length) gsap.fromTo(vis, {opacity:0, y:12}, {opacity:1, y:0, duration:.3, stagger:.04, ease:'power2.out', overwrite:'auto', clearProps:'transform,opacity'});
     }
   }
-  searchInput.addEventListener('input', applyFilters);
-  searchClear.addEventListener('click', function(){ searchInput.value=''; applyFilters(); searchInput.focus(); });
-  document.querySelectorAll('.filter').forEach(function(f){
-    f.addEventListener('click', function(){
-      document.querySelectorAll('.filter').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
-      f.setAttribute('aria-pressed','true');
-      activeFilter = f.getAttribute('data-filter');
-      applyFilters();
-    });
+  var searchTimer = null;
+  searchInput.addEventListener('input', function(){
+    var v = searchInput.value.trim();
+    searchClear.classList.toggle('show', v.length > 0);
+    if (searchTimer) clearTimeout(searchTimer);
+    if (!v){ restoreStarter(); return; }
+    if (/^\d{3,4}$/.test(v) && byCode(v)){ applyFilters(); return; }
+    searchTimer = setTimeout(function(){ startLiveSearch(v); }, 650);
   });
+  searchInput.addEventListener('keydown', function(e){
+    if (e.key === 'Enter'){
+      e.preventDefault();
+      if (searchTimer) clearTimeout(searchTimer);
+      var v = searchInput.value.trim();
+      if (v) startLiveSearch(v);
+    }
+  });
+  searchClear.addEventListener('click', function(){ searchInput.value=''; restoreStarter(); searchInput.focus(); });
 
-  /* ---------- QUICK PICKS ---------- */
-  document.querySelectorAll('.quick-chip').forEach(function(chip){
-    chip.addEventListener('click', function(){
-      searchInput.value = chip.getAttribute('data-q');
-      applyFilters();
-      document.getElementById('songList').scrollIntoView({behavior: reducedMotion ? 'auto' : 'smooth', block:'start'});
+  /* ---------- LIVE YOUTUBE KARAOKE SEARCH ----------
+     The songbook is built from karaoke videos across all of YouTube, not
+     one channel. Search runs through public Invidious mirrors (no API key,
+     CORS-enabled); results arrive a page at a time and keep loading as you
+     scroll, with videoke codes 1001, 1002, 1003... assigned in order. If
+     every mirror is unreachable, the five MELOSCOOP starter songs stay as
+     the songbook so the machine never goes empty. */
+  var songListEl = document.getElementById('songList');
+  var liveStatus = document.getElementById('liveStatus');
+  var loadMoreWrap = document.getElementById('loadMoreWrap');
+  var loadMoreBtn = document.getElementById('loadMoreBtn');
+  var loadMoreMsg = document.getElementById('loadMoreMsg');
+  var starterHTML = songListEl.innerHTML;
+  var liveEndpoints = ['https://yt.chocolatemoo53.com'];
+  var live = { active:false, raw:'', ytq:'', page:0, loading:false, done:false, seen:{}, total:0 };
+  var searchSeq = 0;
+
+  function setLiveStatus(text, isErr){
+    liveStatus.textContent = text;
+    liveStatus.classList.toggle('err', !!isErr);
+  }
+  function fetchJSON(url, ms){
+    return new Promise(function(resolve, reject){
+      var settled = false;
+      var ctl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var timer = setTimeout(function(){ if (!settled){ settled = true; if (ctl) ctl.abort(); reject(new Error('timeout')); } }, ms);
+      fetch(url, ctl ? { signal: ctl.signal } : {}).then(function(res){
+        if (!res.ok) throw new Error('http ' + res.status);
+        return res.json();
+      }).then(function(j){ if (!settled){ settled = true; clearTimeout(timer); resolve(j); } })
+      .catch(function(e){ if (!settled){ settled = true; clearTimeout(timer); reject(e); } });
     });
-  });
+  }
+  /* Discover more public mirrors in the background, so one dead mirror is
+     not a single point of failure. */
+  fetchJSON('https://api.invidious.io/instances.json', 9000).then(function(list){
+    if (!Array.isArray(list)) return;
+    list.forEach(function(pair){
+      var info = pair && pair[1];
+      if (info && info.api && info.cors && info.type === 'https' && info.uri){
+        var uri = info.uri.replace(/\/$/, '');
+        if (liveEndpoints.indexOf(uri) === -1 && liveEndpoints.length < 5) liveEndpoints.push(uri);
+      }
+    });
+  }).catch(function(){});
+
+  function fmtDur(sec){ sec = Math.max(0, Math.floor(sec || 0)); var m = Math.floor(sec / 60), s = sec % 60; return m + ':' + (s < 10 ? '0' : '') + s; }
+  function cleanKaraokeTitle(raw, author){
+    var t = raw.replace(/^\[KARAOKE\]\s*/i, '');
+    var artist = author || '';
+    var parts = t.split(' - ');
+    if (parts.length > 1){
+      var left = parts[0].trim(), right = parts.slice(1).join(' - ').trim();
+      if (left && right && left.length <= 40){ artist = left; t = right; }
+    }
+    t = t.replace(/[\(\[]\s*karaoke[^\)\]]*[\)\]]/ig, '')
+         .replace(/\bkaraoke\s+(version|video)\b/ig, '')
+         .replace(/\s*\|\s*[^|]*$/, '')
+         .replace(/[\s\-\|\u2013\u2014]+$/, '')
+         .replace(/\s{2,}/g, ' ')
+         .trim();
+    return { title: t || raw, artists: artist };
+  }
+  function normalizeItem(it){
+    if (!it || it.type !== 'video' || !it.videoId || it.liveNow) return null;
+    if (it.lengthSeconds && it.lengthSeconds < 30) return null;
+    var c = cleanKaraokeTitle(it.title || '', it.author || '');
+    return {
+      id: it.videoId, title: c.title, artists: c.artists,
+      duration: it.lengthSeconds ? fmtDur(it.lengthSeconds) : '',
+      published: it.publishedText || '', views: it.viewCountText || '',
+      channel: it.author || '',
+      search: ((it.title || '') + ' ' + (it.author || '')).toLowerCase()
+    };
+  }
+  function fetchSearchPage(ytq, page){
+    var chain = Promise.reject(new Error('start'));
+    liveEndpoints.forEach(function(base){
+      chain = chain.catch(function(){
+        return fetchJSON(base + '/api/v1/search?q=' + encodeURIComponent(ytq) + '&type=video&page=' + page, 14000);
+      });
+    });
+    return chain.then(function(data){
+      if (!Array.isArray(data)) throw new Error('bad data');
+      var out = [];
+      data.forEach(function(it){ var n = normalizeItem(it); if (n) out.push(n); });
+      return out;
+    });
+  }
+  function makeLiveRow(item, code){
+    var art = document.createElement('article');
+    art.className = 'song';
+    art.setAttribute('data-code', code);
+    art.setAttribute('data-id', item.id);
+    art.setAttribute('data-title', item.title);
+    art.setAttribute('data-artists', item.artists);
+    art.setAttribute('data-singers', '');
+    art.setAttribute('data-duration', item.duration);
+    art.setAttribute('data-search', item.search + ' ' + code);
+    art.innerHTML = '<div class="song-code"><small>SONG #</small>' + code + '</div>' +
+      '<div class="song-main"><div class="song-thumb"><img alt="" loading="lazy"></div>' +
+      '<div class="song-info"><h3><span class="t"></span> <span class="now-badge">NOW PLAYING</span><span class="inqueue-badge">IN QUEUE</span></h3>' +
+      '<div class="artist"></div><div class="meta"></div></div></div>' +
+      '<div class="song-actions"><button class="act act-play" data-action="play" type="button">' + ICON_PLAY + ' Play now</button>' +
+      '<button class="act act-queue" data-action="queue" type="button">+ Reserve</button></div>';
+    var img = art.querySelector('img');
+    img.src = 'https://i.ytimg.com/vi/' + item.id + '/hqdefault.jpg';
+    img.alt = item.title + ' karaoke thumbnail';
+    art.querySelector('.t').textContent = item.title;
+    art.querySelector('.artist').textContent = item.artists;
+    var meta = art.querySelector('.meta');
+    [item.duration, item.views, item.published, (item.channel && item.channel !== item.artists) ? item.channel : ''].forEach(function(m){
+      if (!m) return;
+      var sp = document.createElement('span'); sp.textContent = m; meta.appendChild(sp);
+    });
+    return art;
+  }
+  function updateLoadMoreUI(){
+    if (!live.active){ loadMoreWrap.hidden = true; return; }
+    loadMoreWrap.hidden = false;
+    loadMoreBtn.disabled = live.loading || live.done;
+    loadMoreBtn.textContent = live.loading ? 'LOADING...' : (live.done ? 'NO MORE RESULTS' : 'LOAD MORE SONGS');
+    loadMoreMsg.textContent = live.done ? ('End of YouTube results for "' + live.raw + '" — ' + live.total + ' karaoke songs loaded.') : '';
+  }
+  function loadLivePage(){
+    if (!live.active || live.loading || live.done) return;
+    live.loading = true; updateLoadMoreUI();
+    var seq = searchSeq;
+    var page = live.page + 1;
+    fetchSearchPage(live.ytq, page).then(function(items){
+      if (seq !== searchSeq) return; /* a newer search replaced this one */
+      live.page = page;
+      var fresh = [];
+      items.forEach(function(it){ if (!live.seen[it.id]){ live.seen[it.id] = true; fresh.push(it); } });
+      if (page === 1 && !fresh.length){ live.loading = false; restoreStarter('No karaoke found on YouTube for "' + live.raw + '" — showing the MELOSCOOP starter songs.'); return; }
+      fresh.forEach(function(it){
+        live.total++;
+        var row = makeLiveRow(it, String(1000 + live.total));
+        songListEl.appendChild(row);
+        bindRow(row);
+      });
+      refreshSongs();
+      syncQueueUI();
+      if (current) rows.forEach(function(r){ r.classList.toggle('playing', r.getAttribute('data-id') === current.id); });
+      songCount.textContent = live.total + (live.total === 1 ? ' song' : ' songs');
+      if (items.length < 8 || !fresh.length) live.done = true;
+      live.loading = false;
+      setLiveStatus('Live from YouTube — karaoke for "' + live.raw + '" · ' + live.total + ' songs loaded' + (live.done ? '' : ' · scroll down for more'), false);
+      updateLoadMoreUI();
+      if (page === 1 && linkMode === 'solo' && songs.length) loadSong(songs[0], false);
+      if (motionOK() && fresh.length){
+        var newRows = rows.slice(Math.max(0, rows.length - fresh.length));
+        if (newRows.length) gsap.fromTo(newRows, {opacity:0, y:14}, {opacity:1, y:0, duration:.35, stagger:.03, ease:'power2.out', overwrite:'auto', clearProps:'transform,opacity'});
+      }
+    }).catch(function(){
+      if (seq !== searchSeq) return;
+      live.loading = false;
+      if (page === 1){ restoreStarter('YouTube search is unreachable right now — showing the MELOSCOOP starter songs instead.'); }
+      else { live.done = true; updateLoadMoreUI(); setLiveStatus('Could not load more from YouTube — ' + live.total + ' songs loaded so far.', true); }
+    });
+  }
+  function startLiveSearch(raw){
+    raw = (raw || '').trim();
+    if (!raw){ restoreStarter(); return; }
+    searchSeq++;
+    live.active = true; live.raw = raw;
+    live.ytq = /karaoke/i.test(raw) ? raw : raw + ' karaoke';
+    live.page = 0; live.loading = false; live.done = false; live.seen = {}; live.total = 0;
+    noResults.classList.remove('show');
+    songListEl.innerHTML = '';
+    refreshSongs();
+    songCount.textContent = 'Searching...';
+    setLiveStatus('Searching YouTube for karaoke: "' + raw + '"...', false);
+    updateLoadMoreUI();
+    loadLivePage();
+  }
+  function restoreStarter(note){
+    searchSeq++;
+    live.active = false; live.loading = false; live.done = true; live.total = 0;
+    songListEl.innerHTML = starterHTML;
+    refreshSongs();
+    rows.forEach(bindRow);
+    rows.forEach(function(r){ r.classList.remove('hidden'); r.classList.toggle('playing', !!(current && r.getAttribute('data-id') === current.id)); });
+    noResults.classList.remove('show');
+    songCount.textContent = songs.length + (songs.length === 1 ? ' song' : ' songs');
+    setLiveStatus(note || 'Starter list: MELOSCOOP favorites. Search above to pull karaoke from all of YouTube.', !!note);
+    updateLoadMoreUI();
+    syncQueueUI();
+  }
+  loadMoreBtn.addEventListener('click', loadLivePage);
+  if (typeof IntersectionObserver !== 'undefined'){
+    var sentinelObs = new IntersectionObserver(function(entries){
+      if (entries[0].isIntersecting) loadLivePage();
+    }, { rootMargin: '700px 0px' });
+    sentinelObs.observe(document.getElementById('scrollSentinel'));
+  }
 
   syncQueueUI();
   padDefaultMsg();
+  /* Open on a live, popular karaoke songbook from all of YouTube; the
+     starter songs above remain the fallback if the search is unreachable. */
+  startLiveSearch('karaoke');
 
 
   /* ---------- SCREEN + REMOTE LINK (PeerJS direct connection, code = room) ---------- */
@@ -1388,7 +1638,7 @@
   }
   function broadcastState(){
     if (linkMode !== 'screen' || !screenConn || !screenConn.open) return;
-    try { screenConn.send({ t:'state', cur: current.id, q: queue.slice(), playing: playerState === 1 }); } catch(err){}
+    try { screenConn.send({ t:'state', cur: current.id, q: queue.slice(), playing: playerState === 1, fs: !!(document.fullscreenElement || document.webkitFullscreenElement) }); } catch(err){}
   }
   function setLinkBar(html){
     if (html){ linkText.innerHTML = html; linkBar.classList.add('show'); }
@@ -1459,6 +1709,8 @@
     } else if (msg.t === 'queue'){
       var s2 = byId(msg.id); if (s2) addToQueue(s2, true);
     } else if (msg.t === 'next'){ playNext(); }
+    else if (msg.t === 'prev'){ playPrev(); }
+    else if (msg.t === 'fullscreen'){ toggleFullscreen(); }
     else if (msg.t === 'toggle'){ togglePlay(); }
     else if (msg.t === 'clear'){ queue = []; syncQueueUI(); }
     else if (msg.t === 'removeAt'){ if (msg.i >= 0 && msg.i < queue.length){ queue.splice(msg.i, 1); syncQueueUI(); } }
@@ -1477,10 +1729,10 @@
       screenCode.textContent = s.code;
       nowCode.textContent = s.code;
       nowTitle.textContent = s.title;
-      nowArtists.innerHTML = s.artists;
+      nowArtists.textContent = plainArtists(s);
       nowDuration.textContent = s.duration ? s.duration : 'Karaoke';
       nowYtLink.href = 'https://www.youtube.com/watch?v=' + s.id;
-      var tick = '♪ NOW PLAYING — #' + s.code + ' ' + s.title.toUpperCase() + ' · ' + plainArtists(s).toUpperCase() + ' ♪ RESERVE YOUR SONG ON THE KEYPAD ♪ MELOSCOOP VIDEOKE ♪';
+      var tick = 'NOW PLAYING — #' + s.code + ' ' + s.title.toUpperCase() + ' · ' + plainArtists(s).toUpperCase() + ' RESERVE YOUR SONG ON THE KEYPAD MELOSCOOP VIDEOKE';
       marqueeA.textContent = tick;
       marqueeB.textContent = tick;
       rows.forEach(function(r){ r.classList.toggle('playing', r.getAttribute('data-id') === s.id); });
@@ -1489,6 +1741,9 @@
     queue = (st.q || []).slice();
     remotePlaying = !!st.playing;
     document.getElementById('remoteToggle').innerHTML = remotePlaying ? (ICON_PAUSE + ' PAUSE') : (ICON_PLAY + ' PLAY');
+    if (typeof st.fs !== 'undefined'){
+      document.getElementById('remoteFs').innerHTML = st.fs ? (ICON_MIN + ' EXIT FULLSCREEN') : (ICON_MAX + ' FULLSCREEN');
+    }
     syncQueueUI();
   }
 
@@ -1544,6 +1799,8 @@
   document.getElementById('remoteCode').addEventListener('keydown', function(e){ if (e.key === 'Enter') startRemote(); });
   document.getElementById('remoteToggle').addEventListener('click', function(){ sendCmd({ t:'toggle' }); });
   document.getElementById('remoteNext').addEventListener('click', function(){ sendCmd({ t:'next' }); });
+  document.getElementById('remotePrev').addEventListener('click', function(){ sendCmd({ t:'prev' }); });
+  document.getElementById('remoteFs').addEventListener('click', function(){ sendCmd({ t:'fullscreen' }); });
 
   /* Mode choice is the first thing shown when the page opens */
   openModal();
