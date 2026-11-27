@@ -599,6 +599,26 @@
   .so-reconnect-txt b{color:var(--yellow);font-family:"Share Tech Mono",monospace;letter-spacing:.08em}
   .so-reconnect .ctl{width:100%;min-height:52px;font-size:16px}
   .so-reconnect .ctl[disabled]{opacity:.55;cursor:default;box-shadow:none}
+  /* SCREEN PLAYBACK UNLOCK — phones refuse to start a YouTube video with
+     sound until the Screen device itself has been tapped once (mobile
+     autoplay rules), which is why a Remote's Play / Next / Prev did
+     nothing when the Screen was a phone. One tap on ENABLE PLAYBACK
+     primes the player from a real tap on this device; after that the
+     Remote drives it fully. The box sits inside the waiting overlay,
+     and the bar version floats over the video once a Remote is
+     connected and the waiting overlay is gone. */
+  .so-unlock{display:none;width:100%;max-width:540px;flex-direction:column;align-items:center;gap:9px;background:rgba(57,255,220,.08);border:1px solid rgba(57,255,220,.45);border-radius:14px;padding:13px 14px}
+  .so-unlock.show{display:flex}
+  .so-unlock .ctl{width:100%;min-height:52px;font-size:16px}
+  .so-unlocked-note{display:none;font-weight:900;font-size:13.5px;color:var(--led)}
+  .so-unlocked-note.show{display:block}
+  .unlock-bar{position:absolute;left:50%;bottom:64px;transform:translateX(-50%);z-index:8;display:none;width:min(92%,520px);flex-direction:column;align-items:center;gap:8px;text-align:center;background:rgba(10,4,28,.94);border:1px solid rgba(57,255,220,.55);border-radius:14px;padding:12px 14px;box-shadow:0 14px 34px rgba(0,0,0,.5)}
+  .unlock-bar.show{display:flex}
+  .unlock-bar p{margin:0;font-weight:800;font-size:13.5px;line-height:1.45;color:#fff}
+  .unlock-bar p b{color:var(--led)}
+  .unlock-bar .ctl{width:100%;min-height:50px;font-size:16px}
+  #remoteUnlockHint{color:#ffd98a}
+  #remoteUnlockHint b{color:#fff}
   .screen-overlay{position:absolute;inset:0;z-index:7;display:none;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;padding:20px;overflow-y:auto;background:radial-gradient(120% 120% at 50% 0%,rgba(36,18,77,.94),rgba(7,3,15,.97))}
   .screen-overlay.show{display:flex}
   /* REMOTE background thumbnail — the Remote overlay is fully opaque and
@@ -624,6 +644,10 @@
        the score is up the screen grows and the card joins the layout. */
     .screen:has(.score-overlay.show){aspect-ratio:auto}
     .score-overlay.show{position:relative;inset:auto}
+    /* Same growth for the playback-unlock bar: on a phone Screen it
+       joins the layout instead of crowding the short 16:9 frame. */
+    .screen:has(> .unlock-bar.show){aspect-ratio:auto}
+    .unlock-bar.show{position:relative;inset:auto;left:auto;bottom:auto;transform:none;width:100%}
     .so-controls{width:100%}
     .so-controls .ctl{flex:1 1 118px;min-width:0}
     .so-now{overflow-wrap:anywhere}
@@ -736,7 +760,7 @@
     <p class="mode-sub">Link two devices: one plays the videos as the Screen, the other runs it as the Remote. Or just use this device on its own.</p>
     <button class="mode-opt" id="modeScreen" type="button">
       <svg class="ic mode-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-      <span><b>Register as Screen</b><small>For the TV or big display. It plays the videos and shows a short pairing code.</small></span>
+      <span><b>Register as Screen</b><small>For the TV or big display. It plays the videos and shows a short pairing code. On a phone Screen, one tap on ENABLE PLAYBACK after registering lets the Remote start songs.</small></span>
     </button>
     <button class="mode-opt" id="modeRemote" type="button">
       <svg class="ic mode-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
@@ -849,12 +873,25 @@
           <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><path d="M12 17h.01"/></svg>
           <span id="skipNoteText"></span>
         </div>
+        <!-- PLAYBACK UNLOCK — a phone Screen needs one tap on this device
+             before a Remote's Play can start a video (mobile autoplay
+             rules). Shown while a Remote is connected and playback has
+             not been unlocked on this device yet. -->
+        <div class="unlock-bar" id="unlockBar" role="alert">
+          <p id="unlockBarTxt">This phone is the Screen — phones block a video from starting until this device is tapped once. Tap <b>ENABLE PLAYBACK</b> and the Remote's Play / Pause / Next / Prev control this phone fully.</p>
+          <button class="ctl ctl-play" id="unlockBtn" type="button"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="7 4 20 12 7 20 7 4"/></svg> ENABLE PLAYBACK</button>
+        </div>
         <div class="screen-overlay" id="screenOverlay">
           <span class="so-label">THIS IS THE SCREEN</span>
           <span class="so-code-label">REMOTE CODE</span>
           <span class="so-code led" id="screenCodeBig">----</span>
           <span class="so-status" id="screenOverlayStatus">Waiting for a remote to connect…</span>
           <span class="so-note">Open MELOSCOOP on your phone, choose <b>Join as Remote</b>, and enter this code. This code stays the same for the whole session — if the Remote disconnects, it can rejoin with this same code, no new code needed. Only one Remote can be connected at a time — a second phone joining with this code is turned away while a Remote is connected.</span>
+          <div class="so-unlock" id="screenUnlockBox">
+            <button class="ctl ctl-play" id="screenUnlockBtn" type="button"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="7 4 20 12 7 20 7 4"/></svg> ENABLE PLAYBACK</button>
+            <span class="so-note">Is this Screen a phone? Phones block a video from starting until this device is tapped once — tap <b>ENABLE PLAYBACK</b> now, and after that the Remote's Play / Pause / Next / Prev control this phone fully, no more taps needed.</span>
+          </div>
+          <span class="so-unlocked-note" id="screenUnlockedNote">Playback enabled — the Remote can control this Screen.</span>
           <button class="ctl ctl-play so-fs" id="screenFs" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg> Enter fullscreen</button>
         </div>
         <div class="screen-overlay" id="remoteOverlay">
@@ -867,6 +904,7 @@
             <button class="ctl ctl-play" id="remoteReconnectBtn" type="button">RECONNECT — SAME CODE</button>
           </div>
           <span class="so-now" id="remoteNow">Waiting for the Screen…</span>
+          <span class="so-note" id="remoteUnlockHint" hidden>If a song does not start, the Screen phone is waiting for one tap on its <b>ENABLE PLAYBACK</b> button — phones need that tap once before a Remote can start videos.</span>
           <span class="so-queue" id="remoteQueueLine"></span>
           <div class="so-controls">
             <button class="ctl ctl-play" id="remoteToggle" type="button"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="7 4 20 12 7 20 7 4"/></svg> PLAY</button>
@@ -1556,7 +1594,7 @@
     playerState = e.data; /* 0 ended · 1 playing · 2 paused · 3 buffering · 5 cued */
     if (e.data === 1 || e.data === 3 || e.data === 5) forceCaptionsOff();
     broadcastState();
-    if (e.data === 1){ skipChain = 0; playedCurrent = true; clearPlayWatchdog(); setPlayingUI(true); applyTempo(); }
+    if (e.data === 1){ skipChain = 0; playedCurrent = true; clearPlayWatchdog(); setPlayingUI(true); applyTempo(); notePlaybackStarted(); }
     else if (e.data === 2){ bigPlayTxt.textContent = 'RESUME'; setPlayingUI(false); }
     else if (e.data === 5){ bigPlayTxt.textContent = 'TAP TO SING'; setPlayingUI(false); }
     else if (e.data === 0){
@@ -1597,6 +1635,7 @@
     syncMuteIcon();
     applyTempo();
     applyVolume();
+    if (unlockRequested){ unlockRequested = false; if (linkMode === 'screen') showToast('Player ready — tap ENABLE PLAYBACK once more to unlock Remote control'); }
     if (pendingSong){
       var s = pendingSong, ap = pendingAutoplay;
       pendingSong = null;
@@ -1636,6 +1675,101 @@
     scr.insertBefore(fallbackFrame, clickLayer);
     if (pendingAutoplay) bigPlay.classList.add('hide');
   }
+
+  /* ---------- SCREEN PLAYBACK UNLOCK (mobile autoplay rules) ----------
+     Phones refuse to start a YouTube video with sound unless playback
+     was begun by a tap on THAT device. A Remote's Play / Pause / Next /
+     Prev arrives over the data connection — no tap on the Screen phone —
+     so on a phone Screen the player just sat cued and nothing played,
+     while the same Remote worked fine against a laptop or TV Screen.
+     The fix is one tap on the Screen phone itself: ENABLE PLAYBACK
+     starts the player muted from inside that tap, and the moment it is
+     really playing, the song is paused again and the sound restored.
+     A player that has played once from a real tap accepts the API's
+     play / load calls from then on, so the Remote drives it fully.
+     A Remote command that still has not started playback a moment
+     later is remembered as pending, the prompt comes back up, and the
+     enabling tap finishes exactly what the Remote asked for. */
+  var playbackUnlocked = false, primeInProgress = false, pendingRemotePlay = false, unlockRequested = false, blockedCheckTimer = null;
+  var unlockBar = document.getElementById('unlockBar');
+  var unlockBarTxt = document.getElementById('unlockBarTxt');
+  function syncUnlockUI(){
+    var locked = linkMode === 'screen' && !playbackUnlocked;
+    var box = document.getElementById('screenUnlockBox');
+    var done = document.getElementById('screenUnlockedNote');
+    if (box) box.classList.toggle('show', locked);
+    if (done) done.classList.toggle('show', linkMode === 'screen' && playbackUnlocked);
+    if (unlockBar){
+      unlockBar.classList.toggle('show', locked && !screenOverlay.classList.contains('show'));
+      if (locked && pendingRemotePlay) unlockBarTxt.innerHTML = 'The Remote pressed Play, but this phone blocked the video from starting — phones need one tap on the Screen itself. Tap <b>ENABLE PLAYBACK</b> and the song starts; after that the Remote controls this phone fully.';
+    }
+  }
+  function unlockPlayback(){
+    if (playbackUnlocked) return;
+    if (player && playerReady){
+      primeInProgress = true;
+      try { player.mute(); } catch(err){}
+      try { player.playVideo(); } catch(err){}
+      /* If the tap-initiated play still never starts, stay locked and
+         keep the prompt up so another tap can try again. */
+      setTimeout(function(){ primeInProgress = false; }, 3000);
+    } else if (fallbackFrame){
+      /* Backup embed: reloading it with autoplay from inside this tap
+         is the gesture a phone needs; there is no API state to watch,
+         so the tap itself is the unlock. */
+      fallbackFrame.src = 'https://www.youtube.com/embed/' + current.id + '?rel=0&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&cc_load_policy=0&autoplay=1';
+      bigPlay.classList.add('hide');
+      playbackUnlocked = true;
+      pendingRemotePlay = false;
+      syncUnlockUI();
+      broadcastState();
+      showToast('Playback enabled — the Remote now controls this Screen');
+    } else {
+      /* Player still loading: cue the song, and onPlayerReady asks for
+         one more tap once the player can actually be primed. */
+      unlockRequested = true;
+      pendingSong = current; pendingAutoplay = false;
+      showToast('Player is still loading — tap ENABLE PLAYBACK once more in a moment');
+    }
+  }
+  function notePlaybackStarted(){
+    if (primeInProgress){
+      primeInProgress = false;
+      playbackUnlocked = true;
+      try { player.pauseVideo(); } catch(err){}
+      try { player.unMute(); } catch(err){}
+      applyVolume();
+      syncUnlockUI();
+      broadcastState();
+      showToast('Playback enabled — the Remote now controls this Screen');
+      if (pendingRemotePlay){
+        pendingRemotePlay = false;
+        if (current) loadSong(current, true);
+      }
+    } else if (!playbackUnlocked){
+      /* Any real start — even a tap on this device's own TAP TO SING —
+         means the player now accepts Remote commands too. */
+      playbackUnlocked = true;
+      syncUnlockUI();
+      broadcastState();
+    }
+  }
+  /* A Remote command that should be playing by now but is not means
+     the phone blocked it: remember the intent and raise the prompt. */
+  function armBlockedPlayCheck(){
+    if (blockedCheckTimer) clearTimeout(blockedCheckTimer);
+    blockedCheckTimer = setTimeout(function(){
+      blockedCheckTimer = null;
+      if (linkMode !== 'screen' || playbackUnlocked) return;
+      if (playerState !== 1 && playerState !== 3){
+        pendingRemotePlay = true;
+        syncUnlockUI();
+        showToast('The Remote is trying to play — this phone needs one tap on ENABLE PLAYBACK first');
+      }
+    }, 1800);
+  }
+  document.getElementById('screenUnlockBtn').addEventListener('click', unlockPlayback);
+  document.getElementById('unlockBtn').addEventListener('click', unlockPlayback);
 
   function togglePlay(){
     if (linkMode === 'remote'){ sendCmd({t:'toggle'}); return; }
@@ -2511,7 +2645,7 @@
   }
   function broadcastState(){
     if (linkMode !== 'screen' || !screenConn || !screenConn.open) return;
-    try { screenConn.send({ t:'state', cur: current.id, curMeta: songMeta(current), q: queue.slice(), qMeta: queue.map(function(id){ return songMeta(byId(id)); }), playing: playerState === 1, fs: !!(document.fullscreenElement || document.webkitFullscreenElement), scorer: scorerOn, tempo: tempoIdx, vol: volLevel }); } catch(err){}
+    try { screenConn.send({ t:'state', cur: current.id, curMeta: songMeta(current), q: queue.slice(), qMeta: queue.map(function(id){ return songMeta(byId(id)); }), playing: playerState === 1, unlocked: playbackUnlocked, fs: !!(document.fullscreenElement || document.webkitFullscreenElement), scorer: scorerOn, tempo: tempoIdx, vol: volLevel }); } catch(err){}
   }
   /* The Remote's compact live queue readout, inside its overlay. */
   function updateRemoteQueueLine(){
@@ -2637,6 +2771,7 @@
     document.getElementById('screenCodeBig').textContent = roomCode;
     document.getElementById('screenOverlayStatus').textContent = 'Waiting for a remote to connect…';
     screenOverlay.classList.add('show');
+    syncUnlockUI();
     setLinkBar('SCREEN MODE — remote code <b>' + roomCode + '</b> · waiting for a remote');
     registerScreenPeer();
     scrollToMachine();
@@ -2644,6 +2779,7 @@
   function screenWaitingUi(msg){
     document.getElementById('screenOverlayStatus').textContent = msg || ('Remote disconnected — it can rejoin any time with the same code ' + roomCode + '. Waiting…');
     screenOverlay.classList.add('show');
+    syncUnlockUI();
     setLinkBar('SCREEN MODE — remote code <b>' + roomCode + '</b> · waiting for a remote to reconnect with the same code');
   }
   function registerScreenPeer(){
@@ -2676,6 +2812,7 @@
         screenHadRemote = true;
         screenRetries = 0;
         screenOverlay.classList.remove('show');
+        syncUnlockUI();
         setLinkBar('SCREEN MODE — remote code <b>' + roomCode + '</b> · remote connected');
         showToast(wasReconnect ? 'Remote reconnected — same code ' + roomCode : 'Remote connected — this is the Screen');
         broadcastState();
@@ -2744,6 +2881,7 @@
     else if (msg.t === 'playAt'){
       if (msg.i >= 0 && msg.i < queue.length){ var s3 = byId(queue[msg.i]); queue.splice(msg.i, 1); if (s3) loadSong(s3, true); }
     }
+    if (msg.t === 'play' || msg.t === 'playAt' || msg.t === 'next' || msg.t === 'prev' || (msg.t === 'toggle' && playerState !== 1)) armBlockedPlayCheck();
     suppressScroll = false;
     broadcastState();
   }
@@ -2776,6 +2914,8 @@
     }
     queue = (st.q || []).slice();
     remotePlaying = !!st.playing;
+    var uh = document.getElementById('remoteUnlockHint');
+    if (uh) uh.hidden = st.unlocked !== false;
     document.getElementById('remoteToggle').innerHTML = remotePlaying ? (ICON_PAUSE + ' PAUSE') : (ICON_PLAY + ' PLAY');
     if (typeof st.fs !== 'undefined'){
       document.getElementById('remoteFs').innerHTML = st.fs ? (ICON_MIN + ' EXIT FULLSCREEN') : (ICON_MAX + ' FULLSCREEN');
