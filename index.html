@@ -144,7 +144,7 @@
   }
 
   /* LED ticker under the screen */
-  .marquee{position:relative;height:37px;margin-top:12px;max-width:100%;background:#000;border:1px solid #3c2a75;border-radius:9px;overflow:hidden;contain:strict;box-shadow:inset 0 2px 8px rgba(0,0,0,.95)}
+  .marquee{position:relative;height:37px;margin-top:12px;max-width:100%;background:#000;border:1px solid #3c2a75;border-radius:9px;overflow:hidden;overflow:clip;contain:strict;box-shadow:inset 0 2px 8px rgba(0,0,0,.95)}
   .marquee-track{position:absolute;top:0;left:0;display:inline-flex;white-space:nowrap;max-width:none;animation:tick 22s linear infinite;padding:7px 0;will-change:transform}
   .marquee-track span{font-family:"Share Tech Mono",monospace;font-size:14px;letter-spacing:.1em;color:var(--led-amber);text-shadow:0 0 8px rgba(255,181,46,.6);padding-right:56px}
   @keyframes tick{to{transform:translateX(-50%)}}
@@ -188,8 +188,9 @@
   .now-meta h2{font-family:"Fredoka",sans-serif;font-size:clamp(22px,3.2vw,29px);margin:0;line-height:1.1}
   .now-meta p{margin:3px 0 0;color:var(--muted);font-weight:800;font-size:14px}
   .now-meta p .dot{color:var(--pink)}
-  .controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px}
-  @media(min-width:680px){.controls{grid-template-columns:1.25fr 1fr 1fr auto auto}}
+  .controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:15px}
+  .controls .ctl{min-width:0}
+  @media(min-width:680px){.controls{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) minmax(0,1fr) auto auto}}
   .live-status{margin:12px 0 0;font-weight:800;font-size:13.5px;color:var(--cyan)}
   .live-status.err{color:#ff8a80}
   .load-more{margin-top:16px;text-align:center}
@@ -206,9 +207,15 @@
   .ctl-next{background:linear-gradient(180deg,#ffe45e,#f5c81d);color:#24124d}
   .ctl-queue{background:#fff;color:var(--purple)}
   .ctl-yt{background:transparent;color:#fff;border:2px solid var(--line);box-shadow:none}
-  .fn-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}
-  @media(max-width:420px){.fn-grid{grid-template-columns:1fr}}
-  .fn{display:flex;align-items:center;gap:7px;background:rgba(0,0,0,.35);border:1px solid #3c2a75;border-radius:12px;padding:7px 8px}
+  /* minmax(0,1fr) tracks + min-width:0 rows: a plain 1fr track is floored by
+     the row's min-content (the range slider's intrinsic width leaks into
+     that), which forced the TEMPO / MUSIC VOLUME rows wider than the panel
+     on phones and clipped the + buttons off the right edge. With the floor
+     at 0 the rows can never exceed the panel, and every row item below is
+     allowed to shrink. */
+  .fn-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px;margin-top:16px;min-width:0}
+  @media(max-width:420px){.fn-grid{grid-template-columns:minmax(0,1fr)}}
+  .fn{display:flex;align-items:center;gap:7px;background:rgba(0,0,0,.35);border:1px solid #3c2a75;border-radius:12px;padding:7px 8px;min-width:0}
   .fn-label{font-size:10px;font-weight:900;letter-spacing:.14em;color:var(--muted);min-width:56px}
   .fn-note{margin:10px 2px 0;font-size:12.5px;font-weight:700;line-height:1.45;color:var(--muted)}
   .fn-grid.fn-off{opacity:.45}
@@ -216,14 +223,14 @@
   .fn-btn{flex:none;width:38px;height:38px;border-radius:9px;border:1px solid #6a52b8;color:#fff;font-size:18px;font-weight:900;line-height:1;
     background:linear-gradient(180deg,#51399b,#33206e);box-shadow:0 3px 0 #0d0620;transition:transform .08s ease,box-shadow .08s ease}
   .fn-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #0d0620}
-  .fn-val{flex:1;text-align:center;color:var(--led);font-size:17px;padding:4px 2px;text-shadow:0 0 7px rgba(57,255,220,.55)}
+  .fn-val{flex:1;min-width:0;text-align:center;color:var(--led);font-size:17px;padding:4px 2px;text-shadow:0 0 7px rgba(57,255,220,.55)}
   /* MUSIC VOLUME slider — sits in the machine's volume row and in the
      Remote overlay, always showing the true 0-100 level next to it. */
-  .fn-slider{flex:1 1 60px;min-width:40px;height:30px;accent-color:#ff6cb5;cursor:pointer;background:transparent;border:0;padding:0}
+  .fn-slider{flex:1 1 60px;min-width:0;width:0;height:30px;accent-color:#ff6cb5;cursor:pointer;background:transparent;border:0;padding:0}
   .fn-slider + .fn-val{flex:none;min-width:48px}
   .so-vol{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;width:100%;max-width:540px;background:rgba(0,0,0,.38);border:1px solid #3c2a75;border-radius:12px;padding:8px 10px}
   .so-vol-label{font-size:10px;font-weight:900;letter-spacing:.14em;color:var(--muted)}
-  .so-vol-slider{flex:1 1 90px;min-width:70px;height:30px;accent-color:#ff6cb5;cursor:pointer;background:transparent;border:0;padding:0}
+  .so-vol-slider{flex:1 1 90px;min-width:0;height:30px;accent-color:#ff6cb5;cursor:pointer;background:transparent;border:0;padding:0}
   .so-vol-val{flex:none;min-width:48px}
   /* RESERVED — the lineup sits on top of the screen player itself, like a
      real videoke on-screen display, so it stays visible on the TV and in
@@ -502,6 +509,9 @@
     .now-meta h2{font-size:22px}
     .controls{gap:8px;margin-top:12px}
     .ctl{min-height:54px;font-size:16px;padding:12px 10px;border-radius:13px}
+    .fn{gap:6px;padding:7px}
+    .fn-btn{width:36px;height:36px}
+    .fn-label{min-width:52px}
     .upnext-bar{gap:7px;padding:6px 8px}
     .unb-label{font-size:11.5px}
     .unb-chip{font-size:12px;padding:4px 10px 4px 5px}
@@ -880,7 +890,7 @@
           <button class="ctl ctl-queue" id="btnQueueCurrent" type="button">+ Reserve</button>
           <a class="ctl ctl-yt" id="nowYtLink" href="https://www.youtube.com/watch?v=NDXjhD_wVvA" target="_blank" rel="noopener">YouTube <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
         </div>
-        <button class="scorer-toggle" id="scorerToggle" type="button" aria-pressed="false"><span class="st-dot" aria-hidden="true"></span> SCORER <span class="st-state" id="scorerState">OFF</span></button>
+        <button class="scorer-toggle" id="scorerToggle" type="button" aria-pressed="true"><span class="st-dot" aria-hidden="true"></span> SCORER <span class="st-state" id="scorerState">ON</span></button>
         <div class="fn-grid" id="fnGrid" aria-label="Sound controls">
           <div class="fn"><span class="fn-label">TEMPO</span><button class="fn-btn" type="button" data-fn="tempo" data-dir="-1" aria-label="Tempo slower">-</button><span class="led fn-val" id="fnTempo">1.0x</span><button class="fn-btn" type="button" data-fn="tempo" data-dir="1" aria-label="Tempo faster">+</button></div>
           <div class="fn"><span class="fn-label">MUSIC VOLUME</span><button class="fn-btn" type="button" data-fn="vol" data-dir="-1" aria-label="Music volume down">-</button><input class="fn-slider" id="fnVolSlider" type="range" min="0" max="100" step="1" value="100" aria-label="Music volume level"><span class="led fn-val" id="fnVol">100</span><button class="fn-btn" type="button" data-fn="vol" data-dir="1" aria-label="Music volume up">+</button></div>
@@ -1754,7 +1764,7 @@
      A just-for-fun performance score, 0-100, revealed big on the screen
      (and mirrored to the Remote) whenever a song finishes while the
      Scorer is on. Past scores stay listed under the queue. */
-  var scorerOn = false;
+  var scorerOn = true; /* ON by default — a score pops up after each finished song unless the user toggles it off */
   var playedCurrent = false;
   var scoreTimer = null;
   var scoreAdvanceTimer = null;
