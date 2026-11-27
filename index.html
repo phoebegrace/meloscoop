@@ -599,12 +599,12 @@
   #remoteOverlay .so-thumb.on{opacity:.55}
   #remoteOverlay .so-thumb-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,3,15,.52),rgba(7,3,15,.82));z-index:-1}
   @media (prefers-reduced-motion: reduce){#remoteOverlay .so-thumb{transition:none}}
-  /* On phones the 16:9 screen is far shorter than the Screen / Remote
-     overlay content, so a shown overlay joins the layout and the screen
-     grows to fit it: PAUSE / PREV / NEXT, FULLSCREEN / EXIT FULLSCREEN
-     and every label stay fully visible instead of being cut off at the
-     bottom edge of the TV panel. */
-  @media(max-width:680px){
+  /* On phones and tablets the 16:9 screen is far shorter than the Screen /
+     Remote overlay content, so a shown overlay joins the layout and the
+     screen grows to fit it: PAUSE / PREV / NEXT, FULLSCREEN / EXIT
+     FULLSCREEN and every label stay fully visible instead of being cut
+     off at the bottom edge of the TV panel. */
+  @media(max-width:1023px){
     .screen:has(> .screen-overlay.show){aspect-ratio:auto}
     .screen-overlay.show{position:relative;inset:auto}
     /* The big FUN SCORE reveal gets the same treatment: on a phone the
@@ -672,6 +672,41 @@
   @media(max-width:759px){
     .song-actions{flex-wrap:wrap}
     .song-actions .act{flex:1 1 128px}
+  }
+
+  /* ============ TABLET BAND (iPad sizes, ~680-1100px) ============
+     Between the phone rules and the wide-desktop rules, the deck's
+     control panel is only ~260-640px wide even though the machine itself
+     is wide: the keypad takes a fixed 292px column and the controls sit
+     beside it. The desktop 5-across transport row and the side-by-side
+     TEMPO / MUSIC VOLUME rows were sized for a full-width panel, so in
+     this band the buttons crush to a few dozen pixels, labels wrap, and
+     the volume slider shrinks to nothing. Here the transport wraps to
+     two comfortable columns (YouTube link full width underneath) and
+     the sound rows stack full width, so every control keeps a usable
+     size and nothing is clipped. */
+  @media(min-width:680px) and (max-width:1099px){
+    .controls{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+    .controls .ctl-yt{grid-column:1/-1}
+    .fn-grid{grid-template-columns:minmax(0,1fr)}
+  }
+  /* With the queue as a 300px sidebar (960-1100px) the songbook column
+     is too narrow for inline Play / Reserve buttons next to the
+     thumbnail and title — the info column gets squeezed to ~100px and
+     titles wrap a word at a time. In this band the actions drop to a
+     full-width row under the song instead, like on smaller screens. */
+  @media(min-width:960px) and (max-width:1100px){
+    .song{grid-template-columns:86px minmax(0,1fr)}
+    .song-actions{grid-column:1/-1}
+    .song-actions .act{flex:1}
+    .col-head{grid-template-columns:86px minmax(0,1fr)}
+    .col-head span:last-child{display:none}
+  }
+  /* The Remote's reserved list gets the same two-column treatment the
+     main queue list already has in this width range, so reserved songs
+     sit side by side instead of one long column on a wide panel. */
+  @media(min-width:680px) and (max-width:959px){
+    .rq-list{display:grid;grid-template-columns:1fr 1fr;align-items:start;align-content:start}
   }
 
   @media (prefers-reduced-motion: reduce){
