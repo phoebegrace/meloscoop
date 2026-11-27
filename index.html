@@ -728,7 +728,7 @@
     </button>
     <button class="mode-opt" id="modeRemote" type="button">
       <svg class="ic mode-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
-      <span><b>Join as Remote</b><small>For your phone. Search, reserve and control the Screen in realtime with its code.</small></span>
+      <span><b>Join as Remote</b><small>For your phone. Search, reserve and control the Screen in realtime with its code. One Remote per Screen — a second phone is turned away while a Remote is connected.</small></span>
     </button>
     <div class="remote-form" id="remoteForm">
       <label for="remoteCode">SCREEN CODE</label>
@@ -842,7 +842,7 @@
           <span class="so-code-label">REMOTE CODE</span>
           <span class="so-code led" id="screenCodeBig">----</span>
           <span class="so-status" id="screenOverlayStatus">Waiting for a remote to connect…</span>
-          <span class="so-note">Open MELOSCOOP on your phone, choose <b>Join as Remote</b>, and enter this code. This code stays the same for the whole session — if the Remote disconnects, it can rejoin with this same code, no new code needed.</span>
+          <span class="so-note">Open MELOSCOOP on your phone, choose <b>Join as Remote</b>, and enter this code. This code stays the same for the whole session — if the Remote disconnects, it can rejoin with this same code, no new code needed. Only one Remote can be connected at a time — a second phone joining with this code is turned away while a Remote is connected.</span>
           <button class="ctl ctl-play so-fs" id="screenFs" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg> Enter fullscreen</button>
         </div>
         <div class="screen-overlay" id="remoteOverlay">
@@ -2424,7 +2424,13 @@
      back with that same code. The Remote remembers its code, auto-retries
      a few times, and always offers a manual RECONNECT on the same code —
      ending the session is never required just to rejoin. */
-  var screenHadRemote = false, remoteEverConnected = false, remoteLinkDown = false, remoteReconnectTimer = null, remoteReconnectAttempts = 0, remoteJoining = false;
+  var screenHadRemote = false, screenRemoteCid = null, remoteEverConnected = false, remoteLinkDown = false, remoteReconnectTimer = null, remoteReconnectAttempts = 0, remoteJoining = false;
+  /* This Remote's identity for the whole page session, sent with every
+     join. The Screen allows ONE Remote at a time: it can tell this
+     Remote rejoining after a drop (same client id — allowed to take
+     its slot back) from a SECOND device joining with the same code
+     while a Remote is connected (different client id — turned away). */
+  var remoteClientId = 'remote-' + Math.random().toString(36).slice(2, 10) + '-' + Date.now().toString(36);
   var suppressScroll = false;
   var modeModal = document.getElementById('modeModal');
   var linkBar = document.getElementById('linkBar');
@@ -2619,10 +2625,27 @@
   function registerScreenPeer(){
     linkPeer = new Peer('meloscoop-tv-' + roomCode);
     linkPeer.on('connection', function(c){
+      /* ONE REMOTE AT A TIME. While a Remote is connected, a connection
+         from a DIFFERENT device is turned away: it is sent a clear
+         rejection (its screen shows that this Screen already has a
+         Remote connected) and then closed, and the connected Remote is
+         left completely untouched. A connection carrying the connected
+         Remote's own client id is that same Remote rejoining after a
+         drop, so it may take its slot back over. */
+      var cid = (c.metadata && c.metadata.cid) || null;
+      if (screenConn && cid !== screenRemoteCid){
+        c.on('open', function(){
+          try { c.send({ t:'rejected', reason:'busy' }); } catch(e){}
+          setTimeout(function(){ try { c.close(); } catch(e){} }, 500);
+        });
+        showToast('Another device tried to join as a Remote and was turned away — this Screen already has a Remote connected');
+        return;
+      }
       /* A rejoining Remote is a brand-new connection: it replaces any
          stale one left behind by the drop, which is closed quietly. */
       if (screenConn && screenConn !== c){ try { screenConn.close(); } catch(e){} }
       screenConn = c;
+      screenRemoteCid = cid;
       c.on('open', function(){
         if (screenConn !== c) return;
         var wasReconnect = screenHadRemote;
@@ -2635,12 +2658,13 @@
       });
       c.on('data', handleRemoteCommand);
       c.on('close', function(){
-        if (screenConn === c) screenConn = null;
+        if (screenConn === c){ screenConn = null; screenRemoteCid = null; }
         if (linkMode === 'screen') screenWaitingUi();
       });
       if (c.on) c.on('iceStateChanged', function(state){
         if ((state === 'disconnected' || state === 'failed' || state === 'closed') && screenConn === c){
           screenConn = null;
+          screenRemoteCid = null;
           if (linkMode === 'screen') screenWaitingUi();
         }
       });
@@ -2779,13 +2803,21 @@
     linkPeer = thisPeer;
     thisPeer.on('open', function(){
       if (linkPeer !== thisPeer) return;
-      var thisConn = thisPeer.connect('meloscoop-tv-' + code, { reliable: true });
+      var thisConn = thisPeer.connect('meloscoop-tv-' + code, { reliable: true, metadata: { cid: remoteClientId } });
       remoteConn = thisConn;
       joinTimer = setTimeout(function(){
         if (!thisConn.open) failRemoteJoin(isReconnect, code);
       }, 9000);
-      thisConn.on('open', function(){
-        if (remoteConn !== thisConn) return;
+      /* The channel opening is not the join succeeding: the Screen
+         allows ONE Remote at a time, so it answers a join at once with
+         either its live state (accepted) or a rejection (another Remote
+         is already connected). The success UI waits for that verdict;
+         the timer is only a safety net if no verdict ever arrives. */
+      var joinAccepted = false, verdictTimer = null;
+      function acceptJoin(){
+        if (joinAccepted || remoteConn !== thisConn) return;
+        joinAccepted = true;
+        clearTimeout(verdictTimer);
         clearTimeout(joinTimer);
         clearRemoteReconnect();
         remoteReconnectAttempts = 0;
@@ -2803,10 +2835,28 @@
         showToast(wasReconnect ? 'Reconnected to Screen <b>' + code + '</b> — same code, no new code needed' : 'Connected — you are the Remote');
         connectBtn.disabled = false;
         errEl.textContent = '';
+      }
+      thisConn.on('open', function(){
+        if (remoteConn !== thisConn) return;
+        clearTimeout(joinTimer);
+        verdictTimer = setTimeout(acceptJoin, 3500);
       });
       thisConn.on('data', function(d){
         if (!d) return;
-        if (d.t === 'state') applyRemoteState(d);
+        if (d.t === 'rejected'){
+          /* Turned away: this Screen already has a Remote connected.
+             Tear this attempt down with its handlers disarmed first, so
+             the close that follows cannot fire a stale drop, then
+             report the rejection clearly. */
+          clearTimeout(verdictTimer);
+          clearTimeout(joinTimer);
+          var deadConn = remoteConn; remoteConn = null;
+          var deadPeer = linkPeer; linkPeer = null;
+          if (deadConn){ try { deadConn.close(); } catch(e){} }
+          if (deadPeer){ try { deadPeer.destroy(); } catch(e){} }
+          failRemoteBusy(isReconnect, code);
+        }
+        else if (d.t === 'state'){ acceptJoin(); applyRemoteState(d); }
         else if (d.t === 'score'){
           var rs = { code: d.code, title: d.title, artists: d.artists || '' };
           showScore(d.score, rs);
@@ -2816,11 +2866,15 @@
       thisConn.on('close', function(){
         if (remoteConn !== thisConn) return;
         remoteConn = null;
+        clearTimeout(verdictTimer);
+        if (!joinAccepted && remoteJoining){ failRemoteJoin(isReconnect, code); return; }
         handleRemoteDrop();
       });
       if (thisConn.on) thisConn.on('iceStateChanged', function(state){
         if ((state === 'failed' || state === 'closed') && remoteConn === thisConn){
           remoteConn = null;
+          clearTimeout(verdictTimer);
+          if (!joinAccepted && remoteJoining){ failRemoteJoin(isReconnect, code); return; }
           handleRemoteDrop();
         }
       });
@@ -2856,6 +2910,34 @@
       scheduleRemoteReconnect();
     } else {
       document.getElementById('remoteError').textContent = 'No Screen found with code ' + code + ' — check the code, and that the Screen registered first and is still open.';
+    }
+  }
+
+  /* The Screen turned this join away: it already has a Remote connected,
+     and only one Remote can connect to a Screen at a time. A first join
+     reports it in the form and leaves this device unconnected. A rejoin
+     means another Remote took the slot while this one was away, so the
+     auto-retry loop stops (retrying would only be rejected again) and
+     the reconnect box says so — the manual RECONNECT stays available
+     for once the other Remote disconnects. */
+  function failRemoteBusy(isReconnect, code){
+    remoteJoining = false;
+    clearTimeout(joinTimer);
+    clearRemoteReconnect();
+    document.getElementById('remoteConnect').disabled = false;
+    var msg = 'Screen <b>' + code + '</b> already has a Remote connected — only one Remote can connect to a Screen at a time.';
+    if (isReconnect || remoteEverConnected){
+      remoteLinkDown = true;
+      showRemoteDisconnected('Another Remote is connected to this Screen now.');
+      document.getElementById('remoteReconnectTxt').innerHTML = msg + ' This Remote was not reconnected — wait until the other Remote disconnects, then tap RECONNECT.';
+      var rBtn = document.getElementById('remoteReconnectBtn');
+      rBtn.disabled = false;
+      rBtn.textContent = 'RECONNECT — SAME CODE ' + code;
+      setLinkBar('REMOTE MODE — Screen <b>' + code + '</b> already has a Remote connected');
+    } else {
+      document.getElementById('remoteError').innerHTML = msg + ' Wait until that Remote disconnects, then try again.';
+      linkMode = 'solo';
+      roomCode = '';
     }
   }
 
