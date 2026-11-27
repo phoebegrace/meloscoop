@@ -201,20 +201,25 @@
     background:linear-gradient(180deg,#51399b,#33206e);box-shadow:0 3px 0 #0d0620;transition:transform .08s ease,box-shadow .08s ease}
   .fn-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #0d0620}
   .fn-val{flex:1;text-align:center;color:var(--led);font-size:17px;padding:4px 2px;text-shadow:0 0 7px rgba(57,255,220,.55)}
-  /* UP NEXT — long horizontal lineup strip at the top, with a live count */
-  .upnext-bar{display:flex;align-items:center;gap:12px;margin-top:18px;background:linear-gradient(180deg,#22164a,#1a103c);border:1px solid var(--line);border-radius:16px;padding:10px 12px;box-shadow:var(--shadow)}
+  /* RESERVED — the lineup sits on top of the screen player itself, like a
+     real videoke on-screen display, so it stays visible on the TV and in
+     fullscreen. Hidden while nothing is reserved. */
+  .upnext-bar{position:absolute;top:0;left:0;right:0;z-index:6;display:none;align-items:center;gap:10px;
+    background:linear-gradient(180deg,rgba(5,2,16,.9),rgba(5,2,16,.66));border-bottom:1px solid rgba(106,82,184,.6);
+    padding:7px 10px;backdrop-filter:blur(3px)}
+  .upnext-bar.show{display:flex}
   .unb-head{display:flex;align-items:center;gap:9px;flex:none}
-  .unb-label{font-family:"Fredoka",sans-serif;font-weight:600;letter-spacing:.12em;font-size:14px;color:#fff;white-space:nowrap}
+  .unb-label{font-family:"Fredoka",sans-serif;font-weight:600;letter-spacing:.12em;font-size:13px;color:#fff;white-space:nowrap}
   .unb-count{display:inline-block;font-family:"Share Tech Mono",monospace;font-size:12px;letter-spacing:.06em;color:#0b2b29;background:var(--cyan);border-radius:999px;padding:4px 11px;white-space:nowrap}
   .unb-count b{font-size:14px}
   .unb-track{display:flex;gap:8px;align-items:center;flex:1;min-width:0;overflow-x:auto;padding:4px 2px;scrollbar-width:thin}
   .unb-empty{color:var(--muted);font-weight:700;font-size:13.5px;white-space:nowrap}
-  .unb-chip{flex:none;display:inline-flex;align-items:center;gap:8px;background:#120a2a;border:1px solid var(--line);color:#fff;border-radius:999px;padding:6px 13px 6px 7px;font-family:inherit;font-weight:800;font-size:13.5px;transition:transform .2s var(--ease-spring),background-color .2s ease,border-color .2s ease}
+  .unb-chip{flex:none;display:inline-flex;align-items:center;gap:8px;background:rgba(18,10,42,.92);border:1px solid var(--line);color:#fff;border-radius:999px;padding:5px 12px 5px 6px;font-family:inherit;font-weight:800;font-size:13px;transition:transform .2s var(--ease-spring),background-color .2s ease,border-color .2s ease}
   .unb-chip:hover{transform:translateY(-2px);border-color:var(--pink)}
   .unb-chip:active{transform:scale(.96)}
   .unb-chip .pos{font-family:"Share Tech Mono",monospace;background:var(--pink);color:#fff;border-radius:999px;min-width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:12.5px;padding:0 5px}
   .unb-chip .code{font-family:"Share Tech Mono",monospace;color:var(--yellow);font-weight:400;font-size:13px}
-  .unb-next{flex:none;min-height:44px;padding:9px 16px;font-size:14.5px;border-radius:12px}
+  .unb-next{flex:none;min-height:38px;padding:7px 13px;font-size:13.5px;border-radius:11px}
   .unb-next[disabled]{opacity:.45;cursor:default;box-shadow:none}
 
   /* Inline SVG icons throughout — no emoji */
@@ -399,11 +404,11 @@
     .now-meta h2{font-size:22px}
     .controls{gap:8px;margin-top:12px}
     .ctl{min-height:54px;font-size:16px;padding:12px 10px;border-radius:13px}
-    .upnext-bar{gap:8px;padding:8px 10px;margin-top:14px;flex-wrap:wrap}
-    .unb-track{order:3;flex-basis:100%}
-    .unb-label{font-size:12.5px}
-    .unb-empty{font-size:12.5px}
-    .unb-next{min-height:40px;padding:8px 12px;font-size:13px;margin-left:auto}
+    .upnext-bar{gap:7px;padding:6px 8px}
+    .unb-label{font-size:11.5px}
+    .unb-count{font-size:11px;padding:3px 8px}
+    .unb-chip{font-size:12px;padding:4px 10px 4px 5px}
+    .unb-next{min-height:36px;padding:6px 10px;font-size:12px}
     .layout{gap:16px;margin-top:20px}
     .songbook,.queue,.about{padding:14px}
     .panel-head h2{font-size:22px}
@@ -542,18 +547,6 @@
     <button class="link-end" id="linkEnd" type="button">End session</button>
   </div>
 
-  <!-- UP NEXT — the whole lineup, in order, with a live count -->
-  <div class="upnext-bar" id="upNextBar">
-    <div class="unb-head">
-      <span class="unb-label"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> UP NEXT</span>
-      <span class="unb-count" id="unbCount"><b>0</b> QUEUED</span>
-    </div>
-    <div class="unb-track" id="unbTrack">
-      <span class="unb-empty" id="unbEmpty">No songs lined up yet — reserve from the keypad or the songbook and they'll queue up here, in order.</span>
-    </div>
-    <button class="ctl ctl-next unb-next" id="unbNext" type="button" disabled><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17.5" y="4" width="2.6" height="16" rx="1"/></svg> PLAY NEXT</button>
-  </div>
-
   <!-- VIDEOKE MACHINE -->
   <section class="machine" id="machine" aria-label="MELOSCOOP videoke machine">
     <i class="screw tl" aria-hidden="true"></i><i class="screw tr" aria-hidden="true"></i>
@@ -595,6 +588,17 @@
           </div>
           <button class="cbtn" id="cMute" type="button" aria-label="Mute or unmute"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" stroke="none"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.6 5.4a9 9 0 0 1 0 13.2"/></svg></button>
           <button class="cbtn" id="cFull" type="button" aria-label="Fullscreen"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+        </div>
+        <!-- RESERVED — the reserved lineup, on top of the screen player -->
+        <div class="upnext-bar" id="upNextBar">
+          <div class="unb-head">
+            <span class="unb-label"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> RESERVED</span>
+            <span class="unb-count" id="unbCount"><b>0</b> QUEUED</span>
+          </div>
+          <div class="unb-track" id="unbTrack">
+            <span class="unb-empty" id="unbEmpty">No songs reserved yet</span>
+          </div>
+          <button class="ctl ctl-next unb-next" id="unbNext" type="button" disabled><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17.5" y="4" width="2.6" height="16" rx="1"/></svg> PLAY NEXT</button>
         </div>
         <div class="screen-overlay" id="screenOverlay">
           <span class="so-label">THIS IS THE SCREEN</span>
@@ -1113,6 +1117,7 @@
   var clearBtn = document.getElementById('clearQueue');
   var nextBtn2 = document.getElementById('btnNext2');
   var topQueueCount = document.getElementById('topQueueCount');
+  var upNextBar = document.getElementById('upNextBar');
   var unbTrack = document.getElementById('unbTrack');
   var unbEmpty = document.getElementById('unbEmpty');
   var unbCount = document.getElementById('unbCount');
@@ -1154,6 +1159,9 @@
       queueList.appendChild(li);
     });
     var has = queue.length > 0;
+    /* The reserved strip lives on top of the screen player: show it only
+       while songs are reserved, so the video stays clean otherwise */
+    upNextBar.classList.toggle('show', has);
     queueEmpty.style.display = has ? 'none' : 'block';
     clearBtn.disabled = !has;
     nextBtn2.disabled = !has;
