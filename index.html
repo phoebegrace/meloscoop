@@ -144,13 +144,13 @@
   }
 
   /* LED ticker under the screen */
-  .marquee{position:relative;height:37px;margin-top:12px;background:#000;border:1px solid #3c2a75;border-radius:9px;overflow:hidden;overflow:clip;contain:paint;box-shadow:inset 0 2px 8px rgba(0,0,0,.95)}
-  .marquee-track{position:absolute;top:0;left:0;display:inline-flex;white-space:nowrap;max-width:none;animation:tick 22s linear infinite;padding:7px 0}
+  .marquee{position:relative;height:37px;margin-top:12px;max-width:100%;background:#000;border:1px solid #3c2a75;border-radius:9px;overflow:hidden;contain:strict;box-shadow:inset 0 2px 8px rgba(0,0,0,.95)}
+  .marquee-track{position:absolute;top:0;left:0;display:inline-flex;white-space:nowrap;max-width:none;animation:tick 22s linear infinite;padding:7px 0;will-change:transform}
   .marquee-track span{font-family:"Share Tech Mono",monospace;font-size:14px;letter-spacing:.1em;color:var(--led-amber);text-shadow:0 0 8px rgba(255,181,46,.6);padding-right:56px}
   @keyframes tick{to{transform:translateX(-50%)}}
 
   /* Control deck */
-  .deck{display:grid;gap:14px;margin-top:16px}
+  .deck{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;margin-top:16px}
   .deck-panel{background:linear-gradient(180deg,rgba(10,5,24,.55),rgba(10,5,24,.75));border:1px solid #4a3590;border-radius:18px;padding:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
   .deck-label{font-family:"Fredoka",sans-serif;font-size:11px;font-weight:600;letter-spacing:.26em;color:var(--cyan);margin:0 0 12px}
   .speaker{display:none;border-radius:18px;border:1px solid #4a3590;min-height:100%;
@@ -564,6 +564,19 @@
   .link-text{font-weight:800;font-size:14px;flex:1;min-width:0}
   .link-text b{color:var(--yellow);font-family:"Share Tech Mono",monospace;letter-spacing:.1em}
   .link-end{flex:none;background:transparent;border:2px solid var(--line);color:var(--muted);border-radius:999px;padding:8px 13px;font-weight:900;font-size:13px;min-height:40px;font-family:inherit;cursor:pointer}
+  .link-reconnect{flex:none;display:none;background:linear-gradient(180deg,#ff6cb5,var(--pink-dark));border:0;color:#fff;border-radius:999px;padding:8px 15px;font-weight:900;font-size:13px;min-height:40px;font-family:inherit;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.45)}
+  .link-reconnect.show{display:inline-block}
+  .link-bar.disconnected{border-color:var(--led-amber);box-shadow:0 0 22px rgba(255,181,46,.18)}
+  .link-bar.disconnected .link-dot{background:var(--led-amber);box-shadow:0 0 10px 2px rgba(255,181,46,.5)}
+  /* REMOTE reconnect box — appears inside the Remote overlay the moment
+     the link drops. It reuses the SAME Screen code, so the phone rejoins
+     without a new code and without ending the session. */
+  .so-reconnect{display:none;width:100%;max-width:540px;flex-direction:column;align-items:center;gap:9px;background:rgba(255,181,46,.12);border:1px solid var(--led-amber);border-radius:14px;padding:13px 14px}
+  .so-reconnect.show{display:flex}
+  .so-reconnect-txt{font-weight:900;font-size:14px;color:#fff;text-align:center;line-height:1.45}
+  .so-reconnect-txt b{color:var(--yellow);font-family:"Share Tech Mono",monospace;letter-spacing:.08em}
+  .so-reconnect .ctl{width:100%;min-height:52px;font-size:16px}
+  .so-reconnect .ctl[disabled]{opacity:.55;cursor:default;box-shadow:none}
   .screen-overlay{position:absolute;inset:0;z-index:7;display:none;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;padding:20px;overflow-y:auto;background:radial-gradient(120% 120% at 50% 0%,rgba(36,18,77,.94),rgba(7,3,15,.97))}
   .screen-overlay.show{display:flex}
   /* REMOTE background thumbnail — the Remote overlay is fully opaque and
@@ -704,6 +717,7 @@
   <div class="link-bar" id="linkBar" role="status">
     <span class="link-dot" aria-hidden="true"></span>
     <span class="link-text" id="linkText"></span>
+    <button class="link-reconnect" id="linkReconnect" type="button">Reconnect</button>
     <button class="link-end" id="linkEnd" type="button">End session</button>
   </div>
 
@@ -783,7 +797,7 @@
           <span class="so-code-label">REMOTE CODE</span>
           <span class="so-code led" id="screenCodeBig">----</span>
           <span class="so-status" id="screenOverlayStatus">Waiting for a remote to connect…</span>
-          <span class="so-note">Open MELOSCOOP on your phone, choose <b>Join as Remote</b>, and enter this code. A fresh code is made every session.</span>
+          <span class="so-note">Open MELOSCOOP on your phone, choose <b>Join as Remote</b>, and enter this code. This code stays the same for the whole session — if the Remote disconnects, it can rejoin with this same code, no new code needed.</span>
           <button class="ctl ctl-play so-fs" id="screenFs" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg> Enter fullscreen</button>
         </div>
         <div class="screen-overlay" id="remoteOverlay">
@@ -791,6 +805,10 @@
           <span class="so-thumb-shade" aria-hidden="true"></span>
           <span class="so-label">REMOTE MODE</span>
           <span class="so-note">Connected to Screen <b id="remoteCodeLabel">----</b> — the video plays there, not on this device.</span>
+          <div class="so-reconnect" id="remoteReconnect">
+            <span class="so-reconnect-txt" id="remoteReconnectTxt">Disconnected from the Screen.</span>
+            <button class="ctl ctl-play" id="remoteReconnectBtn" type="button">RECONNECT — SAME CODE</button>
+          </div>
           <span class="so-now" id="remoteNow">Waiting for the Screen…</span>
           <span class="so-queue" id="remoteQueueLine"></span>
           <div class="so-controls">
@@ -2356,6 +2374,12 @@
   var linkMode = 'solo'; /* solo | screen | remote */
   var linkPeer = null, screenConn = null, remoteConn = null;
   var roomCode = '', remotePlaying = false, fsTried = false, screenRetries = 0, joinTimer = null;
+  /* Same-code reconnect state. The Screen keeps ONE roomCode for the whole
+     session and never stops listening, so a dropped Remote can always come
+     back with that same code. The Remote remembers its code, auto-retries
+     a few times, and always offers a manual RECONNECT on the same code —
+     ending the session is never required just to rejoin. */
+  var screenHadRemote = false, remoteEverConnected = false, remoteLinkDown = false, remoteReconnectTimer = null, remoteReconnectAttempts = 0, remoteJoining = false;
   var suppressScroll = false;
   var modeModal = document.getElementById('modeModal');
   var linkBar = document.getElementById('linkBar');
@@ -2372,6 +2396,10 @@
       if (o && o.t === 'play' && o.id){ var rs = o.meta ? registerSong(o.meta) : byId(o.id); if (rs) setRemoteThumb(rs); }
       else if (o && o.t === 'playAt' && queue[o.i]){ var qs = byId(queue[o.i]); if (qs) setRemoteThumb(qs); }
       remoteConn.send(o);
+    }
+    else if (linkMode === 'remote' && roomCode){
+      showRemoteDisconnected('Disconnected from the Screen.');
+      showToast('Disconnected — tap <b>RECONNECT</b> to rejoin Screen <b>' + roomCode + '</b> with the same code');
     }
     else { showToast('Not connected to a Screen yet'); }
   }
@@ -2453,9 +2481,66 @@
     if (html){ linkText.innerHTML = html; linkBar.classList.add('show'); }
     else { linkBar.classList.remove('show'); }
   }
+  /* Remote link state UI: connected hides every reconnect affordance;
+     disconnected keeps the Remote overlay up, flags the link bar, and
+     shows the RECONNECT — SAME CODE box plus the link-bar Reconnect
+     button, both wired to rejoin with the remembered roomCode. */
+  function showRemoteConnected(){
+    linkBar.classList.remove('disconnected');
+    document.getElementById('linkReconnect').classList.remove('show');
+    document.getElementById('remoteReconnect').classList.remove('show');
+  }
+  function showRemoteDisconnected(reason){
+    if (linkMode !== 'remote' || !roomCode) return;
+    linkBar.classList.add('disconnected');
+    document.getElementById('linkReconnect').classList.add('show');
+    var box = document.getElementById('remoteReconnect');
+    box.classList.add('show');
+    document.getElementById('remoteReconnectTxt').innerHTML = (reason || 'Disconnected from the Screen.') + ' Rejoin Screen <b>' + roomCode + '</b> with the same code — no new code needed.';
+    var btn = document.getElementById('remoteReconnectBtn');
+    btn.disabled = false;
+    btn.textContent = 'RECONNECT — SAME CODE ' + roomCode;
+    document.getElementById('remoteNow').textContent = 'Connection lost — tap RECONNECT to rejoin with the same code ' + roomCode + '.';
+    setLinkBar('REMOTE MODE — disconnected from Screen <b>' + roomCode + '</b> · tap Reconnect to rejoin with the same code');
+  }
+  function clearRemoteReconnect(){
+    if (remoteReconnectTimer){ clearTimeout(remoteReconnectTimer); remoteReconnectTimer = null; }
+  }
+  /* Auto-retry on the same code with a growing wait (2s, 4s, 6s, 8s, 10s).
+     Stops as soon as a try connects, the session ends, or five tries have
+     run — the manual RECONNECT button stays available after that. */
+  function scheduleRemoteReconnect(){
+    if (linkMode !== 'remote' || !roomCode || remoteJoining) return;
+    if (remoteReconnectAttempts >= 5){
+      document.getElementById('remoteReconnectTxt').innerHTML = 'Still cannot reach Screen <b>' + roomCode + '</b>. Check the Screen is still open showing this same code, then tap RECONNECT.';
+      return;
+    }
+    clearRemoteReconnect();
+    remoteReconnectAttempts++;
+    var wait = Math.min(2000 * remoteReconnectAttempts, 10000);
+    document.getElementById('remoteReconnectTxt').innerHTML = 'Disconnected. Reconnecting to Screen <b>' + roomCode + '</b> with the same code… (try ' + remoteReconnectAttempts + ' of 5)';
+    remoteReconnectTimer = setTimeout(function(){
+      remoteReconnectTimer = null;
+      connectRemoteToScreen(roomCode, true);
+    }, wait);
+  }
+  function reconnectRemoteNow(){
+    if (linkMode !== 'remote' || !roomCode || remoteJoining) return;
+    clearRemoteReconnect();
+    remoteReconnectAttempts = 0;
+    connectRemoteToScreen(roomCode, true);
+  }
+  document.getElementById('remoteReconnectBtn').addEventListener('click', reconnectRemoteNow);
+  document.getElementById('linkReconnect').addEventListener('click', reconnectRemoteNow);
   function openModal(){
     document.getElementById('modeEnd').style.display = linkMode === 'solo' ? 'none' : '';
     document.getElementById('remoteError').textContent = '';
+    /* A Remote that already joined once keeps its code filled in, so
+       rejoining from here never means retyping it. */
+    if (linkMode === 'remote' && roomCode){
+      document.getElementById('remoteCode').value = roomCode;
+      document.getElementById('remoteForm').classList.add('show');
+    }
     modeModal.classList.add('show');
   }
   function closeModal(){ modeModal.classList.remove('show'); }
@@ -2464,45 +2549,81 @@
   document.getElementById('modeEnd').addEventListener('click', function(){ location.reload(); });
   document.getElementById('linkEnd').addEventListener('click', function(){ location.reload(); });
 
-  /* --- Register as Screen: this device plays, and shows the code --- */
-  function startScreen(){
+  /* --- Register as Screen: this device plays, and shows the code ---
+     The code is chosen ONCE per session and never changes while this
+     Screen stays open. When a Remote disconnects, the Screen simply goes
+     back to waiting on the SAME code, so the phone can rejoin with it at
+     any time — no new code, no re-registering, no session reset. */
+  function startScreen(keepCode){
     if (typeof Peer === 'undefined'){ showToast('Connection library did not load — check your connection and reload'); return; }
     closeModal();
     linkMode = 'screen';
-    roomCode = String(Math.floor(1000 + Math.random() * 9000));
+    if (!keepCode || !roomCode) roomCode = String(Math.floor(1000 + Math.random() * 9000));
     document.getElementById('screenCodeBig').textContent = roomCode;
     document.getElementById('screenOverlayStatus').textContent = 'Waiting for a remote to connect…';
     screenOverlay.classList.add('show');
     setLinkBar('SCREEN MODE — remote code <b>' + roomCode + '</b> · waiting for a remote');
+    registerScreenPeer();
+    scrollToMachine();
+  }
+  function screenWaitingUi(msg){
+    document.getElementById('screenOverlayStatus').textContent = msg || ('Remote disconnected — it can rejoin any time with the same code ' + roomCode + '. Waiting…');
+    screenOverlay.classList.add('show');
+    setLinkBar('SCREEN MODE — remote code <b>' + roomCode + '</b> · waiting for a remote to reconnect with the same code');
+  }
+  function registerScreenPeer(){
     linkPeer = new Peer('meloscoop-tv-' + roomCode);
     linkPeer.on('connection', function(c){
+      /* A rejoining Remote is a brand-new connection: it replaces any
+         stale one left behind by the drop, which is closed quietly. */
+      if (screenConn && screenConn !== c){ try { screenConn.close(); } catch(e){} }
       screenConn = c;
       c.on('open', function(){
+        if (screenConn !== c) return;
+        var wasReconnect = screenHadRemote;
+        screenHadRemote = true;
+        screenRetries = 0;
         screenOverlay.classList.remove('show');
         setLinkBar('SCREEN MODE — remote code <b>' + roomCode + '</b> · remote connected');
-        showToast('Remote connected — this is the Screen');
+        showToast(wasReconnect ? 'Remote reconnected — same code ' + roomCode : 'Remote connected — this is the Screen');
         broadcastState();
       });
       c.on('data', handleRemoteCommand);
       c.on('close', function(){
         if (screenConn === c) screenConn = null;
-        document.getElementById('screenOverlayStatus').textContent = 'Remote disconnected — waiting for a remote to connect…';
-        screenOverlay.classList.add('show');
-        setLinkBar('SCREEN MODE — remote code <b>' + roomCode + '</b> · waiting for a remote');
+        if (linkMode === 'screen') screenWaitingUi();
       });
+      if (c.on) c.on('iceStateChanged', function(state){
+        if ((state === 'disconnected' || state === 'failed' || state === 'closed') && screenConn === c){
+          screenConn = null;
+          if (linkMode === 'screen') screenWaitingUi();
+        }
+      });
+    });
+    /* A brief signaling drop on the Screen itself must not cost the code:
+       reconnect the same peer id instead of registering a new one. */
+    linkPeer.on('disconnected', function(){
+      if (linkMode !== 'screen') return;
+      document.getElementById('screenOverlayStatus').textContent = 'Connection hiccup — restoring code ' + roomCode + '…';
+      try { linkPeer.reconnect(); } catch(e){}
     });
     linkPeer.on('error', function(err){
       if (err.type === 'unavailable-id' && screenRetries < 5){
         screenRetries++;
         try { linkPeer.destroy(); } catch(e){}
-        startScreen();
+        if (screenHadRemote){
+          /* The code was already given out — keep fighting for the SAME
+             code after a short wait instead of stranding the Remote. */
+          setTimeout(function(){ if (linkMode === 'screen') registerScreenPeer(); }, 1500);
+        } else {
+          startScreen();
+        }
       } else if (err.type !== 'peer-unavailable'){
         showToast('Screen connection issue (' + err.type + ') — end the session and register again');
       }
     });
-    scrollToMachine();
   }
-  document.getElementById('modeScreen').addEventListener('click', startScreen);
+  document.getElementById('modeScreen').addEventListener('click', function(){ startScreen(false); });
   document.getElementById('screenFs').addEventListener('click', toggleFullscreen);
 
   function handleRemoteCommand(msg){
@@ -2572,35 +2693,73 @@
   function startRemote(){
     var code = (document.getElementById('remoteCode').value || '').replace(/\D/g, '');
     var errEl = document.getElementById('remoteError');
-    var connectBtn = document.getElementById('remoteConnect');
     if (code.length !== 4){ errEl.textContent = 'Enter the 4-digit code shown on the Screen.'; return; }
     if (typeof Peer === 'undefined'){ errEl.textContent = 'Connection library did not load — check your connection and reload.'; return; }
-    errEl.textContent = 'Connecting…';
-    connectBtn.disabled = true;
+    remoteReconnectAttempts = 0;
+    connectRemoteToScreen(code, false);
+  }
+
+  /* One connect attempt to the Screen room for `code`. Used for the first
+     join AND for every rejoin: the code never changes, only the throwaway
+     Peer and connection objects are rebuilt, because a closed PeerJS
+     connection cannot be reopened. The Screen accepts the new connection
+     on the same code and immediately broadcasts the live state back, so
+     Now Playing, the queue, tempo and volume resync on rejoin. */
+  function connectRemoteToScreen(code, isReconnect){
+    var errEl = document.getElementById('remoteError');
+    var connectBtn = document.getElementById('remoteConnect');
+    if (remoteJoining) return;
+    if (typeof Peer === 'undefined'){ errEl.textContent = 'Connection library did not load — check your connection and reload.'; return; }
+    remoteJoining = true;
     linkMode = 'remote';
     roomCode = code;
-    linkPeer = new Peer();
-    linkPeer.on('open', function(){
-      remoteConn = linkPeer.connect('meloscoop-tv-' + code, { reliable: true });
+    document.getElementById('remoteCode').value = code; /* the code stays filled in for any later rejoin */
+    clearTimeout(joinTimer);
+    /* Tear the old link down first; its handlers are disarmed by nulling
+       the shared refs before closing, so they cannot fire a stale drop. */
+    var oldConn = remoteConn; remoteConn = null;
+    if (oldConn){ try { oldConn.close(); } catch(e){} }
+    var oldPeer = linkPeer; linkPeer = null;
+    if (oldPeer){ try { oldPeer.destroy(); } catch(e){} }
+    if (isReconnect){
+      var rBtn = document.getElementById('remoteReconnectBtn');
+      rBtn.disabled = true;
+      rBtn.textContent = 'RECONNECTING…';
+      document.getElementById('remoteReconnectTxt').innerHTML = 'Reconnecting to Screen <b>' + code + '</b> with the same code…';
+    } else {
+      errEl.textContent = 'Connecting…';
+      connectBtn.disabled = true;
+    }
+    var thisPeer = new Peer();
+    linkPeer = thisPeer;
+    thisPeer.on('open', function(){
+      if (linkPeer !== thisPeer) return;
+      var thisConn = thisPeer.connect('meloscoop-tv-' + code, { reliable: true });
+      remoteConn = thisConn;
       joinTimer = setTimeout(function(){
-        if (!remoteConn || !remoteConn.open){
-          errEl.textContent = 'No Screen found with code ' + code + ' — check the code, and that the Screen registered first and is still open.';
-          connectBtn.disabled = false;
-        }
+        if (!thisConn.open) failRemoteJoin(isReconnect, code);
       }, 9000);
-      remoteConn.on('open', function(){
+      thisConn.on('open', function(){
+        if (remoteConn !== thisConn) return;
         clearTimeout(joinTimer);
+        clearRemoteReconnect();
+        remoteReconnectAttempts = 0;
+        remoteJoining = false;
+        remoteLinkDown = false;
+        var wasReconnect = remoteEverConnected;
+        remoteEverConnected = true;
         closeModal();
         document.getElementById('remoteCodeLabel').textContent = code;
         remoteOverlay.classList.add('show');
         document.body.classList.add('is-remote');
         renderRemoteQueue();
+        showRemoteConnected();
         setLinkBar('REMOTE MODE — connected to Screen <b>' + code + '</b>');
-        showToast('Connected — you are the Remote');
+        showToast(wasReconnect ? 'Reconnected to Screen <b>' + code + '</b> — same code, no new code needed' : 'Connected — you are the Remote');
         connectBtn.disabled = false;
         errEl.textContent = '';
       });
-      remoteConn.on('data', function(d){
+      thisConn.on('data', function(d){
         if (!d) return;
         if (d.t === 'state') applyRemoteState(d);
         else if (d.t === 'score'){
@@ -2609,18 +2768,63 @@
           addScoreHistory(d.score, rs);
         }
       });
-      remoteConn.on('close', function(){
-        setLinkBar('REMOTE MODE — connection to the Screen was lost');
-        document.getElementById('remoteNow').textContent = 'Connection lost — end the session and rejoin.';
+      thisConn.on('close', function(){
+        if (remoteConn !== thisConn) return;
+        remoteConn = null;
+        handleRemoteDrop();
+      });
+      if (thisConn.on) thisConn.on('iceStateChanged', function(state){
+        if ((state === 'failed' || state === 'closed') && remoteConn === thisConn){
+          remoteConn = null;
+          handleRemoteDrop();
+        }
       });
     });
-    linkPeer.on('error', function(err){
+    /* The signaling socket itself dropped: same handling as a closed
+       connection — rejoin on the same code, never a new one. */
+    thisPeer.on('disconnected', function(){
+      if (linkPeer === thisPeer) handleRemoteDrop();
+    });
+    thisPeer.on('error', function(err){
       if (err.type === 'peer-unavailable'){
-        clearTimeout(joinTimer);
-        errEl.textContent = 'No Screen found with code ' + code + ' — check the code, and that the Screen registered first.';
-        connectBtn.disabled = false;
+        if (linkPeer === thisPeer) failRemoteJoin(isReconnect, code);
       }
     });
+  }
+
+  /* A join or rejoin attempt failed (no Screen answered in time, or the
+     Screen room was not found). A first join just reports it in the form;
+     a rejoin keeps the same-code retry loop going instead of stranding
+     the Remote on a dead session. */
+  function failRemoteJoin(isReconnect, code){
+    if (!remoteJoining) return;
+    remoteJoining = false;
+    clearTimeout(joinTimer);
+    var connectBtn = document.getElementById('remoteConnect');
+    connectBtn.disabled = false;
+    if (isReconnect || remoteEverConnected){
+      remoteLinkDown = true;
+      showRemoteDisconnected('Could not reach the Screen yet.');
+      var rBtn = document.getElementById('remoteReconnectBtn');
+      rBtn.disabled = false;
+      rBtn.textContent = 'RECONNECT — SAME CODE ' + code;
+      scheduleRemoteReconnect();
+    } else {
+      document.getElementById('remoteError').textContent = 'No Screen found with code ' + code + ' — check the code, and that the Screen registered first and is still open.';
+    }
+  }
+
+  /* The live link dropped after a successful session: keep the Remote
+     exactly where it is, show the same-code reconnect UI, and start the
+     auto-retry loop. Fires once per drop however many close signals
+     PeerJS sends for it. */
+  function handleRemoteDrop(){
+    if (linkMode !== 'remote' || !roomCode || !remoteEverConnected || remoteLinkDown) return;
+    remoteLinkDown = true;
+    remoteJoining = false;
+    clearTimeout(joinTimer);
+    showRemoteDisconnected('Disconnected from the Screen.');
+    scheduleRemoteReconnect();
   }
   document.getElementById('modeRemote').addEventListener('click', function(){
     var form = document.getElementById('remoteForm');
