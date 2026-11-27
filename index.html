@@ -400,8 +400,10 @@
   .queue-head p{margin:3px 0 0;color:var(--muted);font-weight:700;font-size:13px}
   .clear-btn{background:transparent;border:2px solid var(--line);color:var(--muted);border-radius:999px;padding:8px 13px;font-weight:900;font-size:13px;min-height:44px}
   .clear-btn[disabled]{opacity:.4;cursor:default}
-  .queue-list{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:9px}
-  @media(min-width:680px) and (max-width:959px){.queue-list{display:grid;grid-template-columns:1fr 1fr;align-items:start}}
+  /* Fixed height with its own scroll: reserving songs fills this box and
+     then scrolls inside it, so the page never grows or jumps per Reserve. */
+  .queue-list{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:9px;height:200px;overflow-y:auto;align-content:start;scrollbar-width:thin}
+  @media(min-width:680px) and (max-width:959px){.queue-list{display:grid;grid-template-columns:1fr 1fr;align-items:start;align-content:start}}
   .q-item{display:flex;gap:10px;align-items:center;background:#120a2a;border:1px solid var(--line);border-radius:13px;padding:10px}
   .q-pos{font-family:"Share Tech Mono",monospace;background:var(--pink);color:#fff;border-radius:8px;min-width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none}
   .q-info{min-width:0;flex:1}
@@ -411,7 +413,10 @@
   .q-btn{flex:none;width:42px;height:42px;border-radius:10px;border:0;font-size:15px;display:inline-flex;align-items:center;justify-content:center}
   .q-go{background:var(--pink);color:#fff}
   .q-rm{background:var(--panel-2);color:var(--muted)}
-  .queue-empty{margin-top:14px;text-align:center;border:1px dashed var(--line);border-radius:13px;padding:22px 14px;color:var(--muted);font-weight:700;font-size:14px}
+  /* Same fixed height as the queue list, so the empty state and the list
+     swap places without the panel changing size. */
+  .queue-empty{margin-top:14px;height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:1px dashed var(--line);border-radius:13px;padding:22px 14px;color:var(--muted);font-weight:700;font-size:14px}
+  .rq-empty{height:188px}
   .queue-empty .big{font-size:30px;display:block;margin-bottom:6px}
   .queue-next{width:100%;margin-top:14px}
   @media(min-width:680px) and (max-width:959px){.queue .queue-next{max-width:360px}}
@@ -549,6 +554,49 @@
   .link-end{flex:none;background:transparent;border:2px solid var(--line);color:var(--muted);border-radius:999px;padding:8px 13px;font-weight:900;font-size:13px;min-height:40px;font-family:inherit;cursor:pointer}
   .screen-overlay{position:absolute;inset:0;z-index:7;display:none;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;padding:20px;overflow-y:auto;background:radial-gradient(120% 120% at 50% 0%,rgba(36,18,77,.94),rgba(7,3,15,.97))}
   .screen-overlay.show{display:flex}
+  /* REMOTE background thumbnail — the Remote overlay is fully opaque and
+     carries its own artwork layer for the song playing on the Screen, so
+     what shows behind the Remote controls is always that song's own
+     thumbnail. This device's idle local player can never bleed through
+     with a different song's picture behind the controls. */
+  #remoteOverlay{background:#07030f;isolation:isolate}
+  #remoteOverlay .so-thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .35s ease;z-index:-2}
+  #remoteOverlay .so-thumb.on{opacity:.55}
+  #remoteOverlay .so-thumb-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,3,15,.52),rgba(7,3,15,.82));z-index:-1}
+  @media (prefers-reduced-motion: reduce){#remoteOverlay .so-thumb{transition:none}}
+  /* On phones the 16:9 screen is far shorter than the Screen / Remote
+     overlay content, so a shown overlay joins the layout and the screen
+     grows to fit it: PAUSE / PREV / NEXT, FULLSCREEN / EXIT FULLSCREEN
+     and every label stay fully visible instead of being cut off at the
+     bottom edge of the TV panel. */
+  @media(max-width:680px){
+    .screen:has(> .screen-overlay.show){aspect-ratio:auto}
+    .screen-overlay.show{position:relative;inset:auto}
+    .so-controls{width:100%}
+    .so-controls .ctl{flex:1 1 118px;min-width:0}
+    .so-now{overflow-wrap:anywhere}
+  }
+  /* In Remote mode the video plays on the Screen, so this device's own
+     player chrome inside the TV (click layer, big play, control bar) is
+     hidden — the Remote overlay alone drives playback. */
+  body.is-remote .screen .click-layer,
+  body.is-remote .screen .big-play,
+  body.is-remote .screen .ctrl-bar,
+  body.is-remote .screen .flash,
+  body.is-remote .screen .upnext-bar,
+  body.is-remote .screen .next-banner{display:none}
+  /* RESERVED ON THE REMOTE — a dedicated, always-visible Up Next section
+     that exists only on the Remote, right under the machine. It mirrors
+     the Screen's queue live, in order, with play and remove per song.
+     Its list is a fixed height with its own scroll, so reserving more
+     songs never grows the page. */
+  .remote-queue{display:none;margin-top:22px;padding:18px}
+  body.is-remote .remote-queue{display:block}
+  .rq-list{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:9px;height:188px;overflow-y:auto;align-content:start;scrollbar-width:thin}
+  .rq-empty{height:188px}
+  .remote-queue .queue-next{width:100%;margin-top:14px}
+  .remote-queue .queue-next[disabled]{opacity:.45;cursor:default;box-shadow:none}
+  @media(max-width:559px){.remote-queue{padding:14px;margin-top:16px}}
   .so-label{font-family:"Fredoka",sans-serif;font-size:12px;font-weight:600;letter-spacing:.3em;color:var(--cyan)}
   .so-code-label{font-size:10px;font-weight:900;letter-spacing:.3em;color:var(--muted-2);margin-top:4px}
   .so-code{color:var(--led);font-size:clamp(42px,9vw,62px);line-height:1;letter-spacing:.26em;padding:12px 16px 12px 24px;text-shadow:0 0 16px rgba(57,255,220,.6)}
@@ -570,6 +618,21 @@
     .so-controls .ctl{min-height:46px;font-size:14.5px}
   }
   @media (prefers-reduced-motion: reduce){.link-dot{animation:none}}
+
+  /* No sideways scroll on small phones: nothing may force the page wider
+     than the screen. The single-column layout track can shrink freely,
+     long titles, artist names and info chips wrap inside their cards,
+     and the song action buttons wrap instead of pushing a card past the
+     right edge. */
+  @media(max-width:959px){.layout{grid-template-columns:minmax(0,1fr)}}
+  .panel,.song-list,.song,.deck-panel,.machine{min-width:0}
+  .song-info h3,.song-info .artist,.now-meta h2{overflow-wrap:anywhere}
+  .song-info .meta span{max-width:100%;overflow-wrap:anywhere}
+  iframe{max-width:100%}
+  @media(max-width:759px){
+    .song-actions{flex-wrap:wrap}
+    .song-actions .act{flex:1 1 128px}
+  }
 
   @media (prefers-reduced-motion: reduce){
     html{scroll-behavior:auto}
@@ -707,6 +770,8 @@
           <button class="ctl ctl-play so-fs" id="screenFs" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg> Enter fullscreen</button>
         </div>
         <div class="screen-overlay" id="remoteOverlay">
+          <img class="so-thumb" id="remoteThumb" alt="" aria-hidden="true">
+          <span class="so-thumb-shade" aria-hidden="true"></span>
           <span class="so-label">REMOTE MODE</span>
           <span class="so-note">Connected to Screen <b id="remoteCodeLabel">----</b> — the video plays there, not on this device.</span>
           <span class="so-now" id="remoteNow">Waiting for the Screen…</span>
@@ -784,6 +849,25 @@
 
       <div class="speaker" aria-hidden="true"></div>
     </div>
+  </section>
+
+  <!-- RESERVED ON THE REMOTE — dedicated Up Next section, shown only while
+       this device is a Remote: the reserved songs in order, live from the
+       Screen, each with play and remove. -->
+  <section class="panel remote-queue" id="remoteQueuePanel" aria-label="Reserved songs on this Remote">
+    <div class="queue-head">
+      <div>
+        <h2><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> Reserved · Up Next</h2>
+        <p>Reserved on this Remote, in order — the Screen plays them next.</p>
+      </div>
+      <button class="clear-btn" id="rqClear" type="button" disabled>Clear all</button>
+    </div>
+    <ol class="rq-list" id="remoteQueueList"></ol>
+    <div class="queue-empty rq-empty" id="remoteQueueEmpty">
+      <span class="big" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></span>
+      No songs reserved yet.<br>Reserve any song in the songbook or on the keypad and it will line up here.
+    </div>
+    <button class="ctl ctl-next queue-next" id="rqNext" type="button" disabled><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17.5" y="4" width="2.6" height="16" rx="1"/></svg>&nbsp; PLAY NEXT</button>
   </section>
 
   <div class="layout">
@@ -1195,12 +1279,31 @@
       if (qb){ qb.disabled = true; qb.textContent = 'Unavailable'; }
     });
   }
+  /* A content-owner block is a channel-level policy (TJ Karaoke / Ziller
+     block their whole catalogue on other websites), so when one video
+     from a channel fails this way, every other known video from that
+     channel is blocked too — the skip then jumps straight past all of
+     them instead of dying on each one in turn. */
+  function blockChannelMates(song){
+    if (!song || !song.channel) return;
+    var ch = String(song.channel).toLowerCase();
+    Object.keys(registry).forEach(function(id){
+      var s = registry[id];
+      if (s && s.channel && String(s.channel).toLowerCase() === ch && !blockedIds[id]){
+        blockedIds[id] = true;
+        embedCache[id] = false;
+        markRowBlocked(id);
+      }
+    });
+  }
   function handleUnplayable(song){
     if (!song) return;
+    if (current && song.id !== current.id) return; /* stale error for a song already skipped past */
     blockedIds[song.id] = true;
     embedCache[song.id] = false;
     markRowBlocked(song.id);
-    queue = queue.filter(function(id){ return id !== song.id; });
+    blockChannelMates(song);
+    queue = queue.filter(function(id){ return !blockedIds[id]; });
     syncQueueUI();
     skipChain++;
     if (skipChain > 30){
@@ -1209,11 +1312,10 @@
     }
     var next = findNextPlayable(song);
     if (next){
-      showSkipNote('"' + song.title + '" can\'t play here — its owner disabled playback on other websites. Skipping to the next playable song.');
-      if (skipTimer) clearTimeout(skipTimer);
-      skipTimer = setTimeout(function(){ skipTimer = null; loadSong(next, true); }, 1600);
+      showSkipNote('"' + song.title + '" can\'t play here — blocked by its content owner on other websites. Skipping to the next playable song.');
+      loadSong(next, true); /* move on immediately — never sit stuck on the blocked video */
     } else {
-      showSkipNote('"' + song.title + '" can\'t play here — its owner disabled playback on other websites, and no other playable song is loaded yet.');
+      showSkipNote('"' + song.title + '" can\'t play here — blocked by its content owner on other websites, and no other playable song is loaded yet.');
     }
   }
 
@@ -1229,10 +1331,11 @@
       if (history.length > 50) history.shift();
     }
     current = song;
+    setRemoteThumb(song);
     if (player && playerReady){
       if (autoplay) player.loadVideoById(song.id); else player.cueVideoById(song.id);
     } else if (fallbackFrame){
-      fallbackFrame.src = 'https://www.youtube.com/embed/' + song.id + '?rel=0' + (autoplay ? '&autoplay=1' : '');
+      fallbackFrame.src = 'https://www.youtube.com/embed/' + song.id + '?rel=0&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1' + (autoplay ? '&autoplay=1' : '');
       fallbackFrame.title = 'Karaoke player — ' + song.title;
       bigPlay.classList.toggle('hide', !!autoplay);
       if (!autoplay) bigPlayTxt.textContent = 'TAP TO SING';
@@ -1357,8 +1460,12 @@
      websites; 100 = the video is gone or private. Either way this song can
      never play here, so skip it instead of leaving a dead player. */
   function onPlayerError(e){
-    var code = e && e.data;
-    if (code === 100 || code === 101 || code === 150){ handleUnplayable(current); }
+    /* 100 / 101 / 150 are the documented can't-play codes (video gone or
+       private, embedding switched off, and the content-owner claim block
+       TJ Karaoke / Ziller use — which oEmbed cannot see in advance). Any
+       other player error still means this video will not play here, so
+       every error takes the same skip path. */
+    handleUnplayable(current);
   }
   function syncMuteIcon(){ if (player && playerReady && player.isMuted) cMute.innerHTML = player.isMuted() ? ICON_VOLX : ICON_VOL; }
   function onPlayerReady(){
@@ -1397,7 +1504,7 @@
     fallbackFrame.allowFullscreen = true;
     fallbackFrame.referrerPolicy = 'strict-origin-when-cross-origin';
     fallbackFrame.title = 'Karaoke player — ' + current.title;
-    fallbackFrame.src = 'https://www.youtube.com/embed/' + current.id + '?rel=0' + (pendingAutoplay ? '&autoplay=1' : '');
+    fallbackFrame.src = 'https://www.youtube.com/embed/' + current.id + '?rel=0&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1' + (pendingAutoplay ? '&autoplay=1' : '');
     scr.insertBefore(fallbackFrame, clickLayer);
     if (pendingAutoplay) bigPlay.classList.add('hide');
   }
@@ -1408,7 +1515,7 @@
       if (playerState === 1){ player.pauseVideo(); flash(ICON_PAUSE); }
       else { player.playVideo(); flash(ICON_PLAY); }
     } else if (fallbackFrame){
-      fallbackFrame.src = 'https://www.youtube.com/embed/' + current.id + '?rel=0&autoplay=1';
+      fallbackFrame.src = 'https://www.youtube.com/embed/' + current.id + '?rel=0&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&autoplay=1';
       bigPlay.classList.add('hide');
     } else {
       /* Player still loading — queue the tap so it plays when ready,
@@ -1535,10 +1642,13 @@
       queueList.appendChild(li);
     });
     var has = queue.length > 0;
+    /* Exactly one of the fixed-height list / fixed-height empty state is
+       shown at a time, so the panel is the same size either way. */
+    queueList.style.display = has ? '' : 'none';
     /* The reserved strip lives on top of the screen player: show it only
        while songs are reserved, so the video stays clean otherwise */
     upNextBar.classList.toggle('show', has);
-    queueEmpty.style.display = has ? 'none' : 'block';
+    queueEmpty.style.display = has ? 'none' : '';
     clearBtn.disabled = !has;
     nextBtn2.disabled = !has;
     /* Top strip: the whole lineup, in order */
@@ -1561,6 +1671,7 @@
       unbTrack.appendChild(chip);
     });
     updateRemoteQueueLine();
+    renderRemoteQueue();
     broadcastState();
   }
 
@@ -1954,8 +2065,15 @@
          .trim();
     return { title: t || raw, artists: artist };
   }
+  /* Some owners pass the oEmbed check yet block playback at play time on
+     other websites through a content claim — TJ Karaoke / TJ노래방 and
+     Ziller (TJ Communication) are the known cases. Their videos never
+     enter the songbook at all; anything else that turns out claim-blocked
+     is caught by the player error path and its whole channel blocked. */
+  var OWNER_BLOCK = /tj\s*karaoke|tj노래방|ziller/i;
   function normalizeItem(it){
     if (!it || it.type !== 'video' || !it.videoId || it.liveNow) return null;
+    if (OWNER_BLOCK.test(it.author || '') || OWNER_BLOCK.test(it.title || '')) return null;
     if (it.lengthSeconds && it.lengthSeconds < 30) return null;
     var c = cleanKaraokeTitle(it.title || '', it.author || '');
     return {
@@ -2129,8 +2247,47 @@
   var remoteOverlay = document.getElementById('remoteOverlay');
 
   function sendCmd(o){
-    if (remoteConn && remoteConn.open){ remoteConn.send(o); }
+    if (remoteConn && remoteConn.open){
+      /* Optimistic: this Remote just chose the song, so its background
+         thumbnail follows at once instead of waiting for the Screen's
+         state broadcast to come back. The broadcast still has the final
+         say and corrects NEXT / PREV / auto-advance changes. */
+      if (o && o.t === 'play' && o.id){ var rs = o.meta ? registerSong(o.meta) : byId(o.id); if (rs) setRemoteThumb(rs); }
+      else if (o && o.t === 'playAt' && queue[o.i]){ var qs = byId(queue[o.i]); if (qs) setRemoteThumb(qs); }
+      remoteConn.send(o);
+    }
     else { showToast('Not connected to a Screen yet'); }
+  }
+
+  /* ---------- REMOTE BACKGROUND THUMBNAIL ----------
+     The artwork layer inside the Remote overlay. It is driven only by the
+     currently playing song: setRemoteThumb runs on every local song load,
+     on every play command this Remote sends, and on every state the
+     Screen broadcasts — so the picture behind the Remote controls is
+     always the playing song's thumbnail, updated in realtime. */
+  var remoteThumbEl = document.getElementById('remoteThumb');
+  var remoteThumbId = null;
+  function thumbForSong(song){
+    if (!song) return '';
+    if (song.row){
+      var im = song.row.querySelector('.song-thumb img');
+      if (im && im.getAttribute('src')) return im.getAttribute('src');
+    }
+    return 'https://i.ytimg.com/vi/' + song.id + '/hqdefault.jpg';
+  }
+  function setRemoteThumb(song){
+    if (!remoteThumbEl || !song || remoteThumbId === song.id) return;
+    remoteThumbId = song.id;
+    remoteThumbEl.classList.remove('on');
+    remoteThumbEl.src = thumbForSong(song);
+  }
+  if (remoteThumbEl){
+    remoteThumbEl.addEventListener('load', function(){ remoteThumbEl.classList.add('on'); });
+    remoteThumbEl.addEventListener('error', function(){
+      var fallback = remoteThumbId ? 'https://i.ytimg.com/vi/' + remoteThumbId + '/hqdefault.jpg' : '';
+      if (fallback && remoteThumbEl.getAttribute('src') !== fallback) remoteThumbEl.src = fallback;
+      else remoteThumbEl.classList.remove('on');
+    });
   }
   function broadcastState(){
     if (linkMode !== 'screen' || !screenConn || !screenConn.open) return;
@@ -2143,6 +2300,37 @@
     var parts = [];
     queue.forEach(function(id){ var s = byId(id); if (s) parts.push('#' + s.code + ' ' + s.title); });
     el.textContent = parts.length ? ('UP NEXT: ' + parts.join('  ·  ')) : '';
+  }
+  /* The Remote's dedicated Reserved / Up Next section, under the machine:
+     the full reserved lineup in order, rebuilt on every queue change —
+     including every state the Screen broadcasts — with tap-to-play and
+     remove per song, sent to the Screen as commands. */
+  function renderRemoteQueue(){
+    var list = document.getElementById('remoteQueueList');
+    if (!list) return;
+    var empty = document.getElementById('remoteQueueEmpty');
+    var clear = document.getElementById('rqClear');
+    var next = document.getElementById('rqNext');
+    list.innerHTML = '';
+    queue.forEach(function(id, idx){
+      var s = byId(id); if (!s) return;
+      var li = document.createElement('li');
+      li.className = 'q-item';
+      li.innerHTML = '<span class="q-pos">' + (idx+1) + '</span>' +
+        '<div class="q-info"><b></b><span><code>#' + s.code + '</code> • </span></div>' +
+        '<button class="q-btn q-go" type="button" aria-label="Play ' + escapeHtml(s.title) + ' now">' + ICON_PLAY + '</button>' +
+        '<button class="q-btn q-rm" type="button" aria-label="Remove ' + escapeHtml(s.title) + ' from queue"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
+      li.querySelector('.q-info b').textContent = s.title;
+      li.querySelector('.q-info span').appendChild(document.createTextNode(plainArtists(s)));
+      li.querySelector('.q-go').addEventListener('click', function(){ sendCmd({t:'playAt', i: idx}); });
+      li.querySelector('.q-rm').addEventListener('click', function(){ sendCmd({t:'removeAt', i: idx}); });
+      list.appendChild(li);
+    });
+    var has = queue.length > 0;
+    list.style.display = has ? '' : 'none';
+    if (empty) empty.style.display = has ? 'none' : '';
+    if (clear) clear.disabled = !has;
+    if (next) next.disabled = !has;
   }
   function setLinkBar(html){
     if (html){ linkText.innerHTML = html; linkBar.classList.add('show'); }
@@ -2249,6 +2437,7 @@
       marqueeB.textContent = tick;
       rows.forEach(function(r){ r.classList.toggle('playing', r.getAttribute('data-id') === s.id); });
       document.getElementById('remoteNow').textContent = '#' + s.code + ' ' + s.title + ' — ' + plainArtists(s);
+      setRemoteThumb(s);
     }
     queue = (st.q || []).slice();
     remotePlaying = !!st.playing;
@@ -2283,6 +2472,8 @@
         closeModal();
         document.getElementById('remoteCodeLabel').textContent = code;
         remoteOverlay.classList.add('show');
+        document.body.classList.add('is-remote');
+        renderRemoteQueue();
         setLinkBar('REMOTE MODE — connected to Screen <b>' + code + '</b>');
         showToast('Connected — you are the Remote');
         connectBtn.disabled = false;
@@ -2321,6 +2512,8 @@
   document.getElementById('remoteNext').addEventListener('click', function(){ sendCmd({ t:'next' }); });
   document.getElementById('remotePrev').addEventListener('click', function(){ sendCmd({ t:'prev' }); });
   document.getElementById('remoteFs').addEventListener('click', function(){ sendCmd({ t:'fullscreen' }); });
+  document.getElementById('rqClear').addEventListener('click', function(){ sendCmd({ t:'clear' }); });
+  document.getElementById('rqNext').addEventListener('click', function(){ sendCmd({ t:'next' }); });
 
   /* Mode choice is the first thing shown when the page opens */
   openModal();
