@@ -144,8 +144,8 @@
   }
 
   /* LED ticker under the screen */
-  .marquee{margin-top:12px;background:#000;border:1px solid #3c2a75;border-radius:9px;overflow:hidden;box-shadow:inset 0 2px 8px rgba(0,0,0,.95)}
-  .marquee-track{display:inline-flex;white-space:nowrap;max-width:none;animation:tick 22s linear infinite;padding:7px 0}
+  .marquee{position:relative;height:37px;margin-top:12px;background:#000;border:1px solid #3c2a75;border-radius:9px;overflow:hidden;overflow:clip;contain:paint;box-shadow:inset 0 2px 8px rgba(0,0,0,.95)}
+  .marquee-track{position:absolute;top:0;left:0;display:inline-flex;white-space:nowrap;max-width:none;animation:tick 22s linear infinite;padding:7px 0}
   .marquee-track span{font-family:"Share Tech Mono",monospace;font-size:14px;letter-spacing:.1em;color:var(--led-amber);text-shadow:0 0 8px rgba(255,181,46,.6);padding-right:56px}
   @keyframes tick{to{transform:translateX(-50%)}}
 
@@ -217,6 +217,14 @@
     background:linear-gradient(180deg,#51399b,#33206e);box-shadow:0 3px 0 #0d0620;transition:transform .08s ease,box-shadow .08s ease}
   .fn-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #0d0620}
   .fn-val{flex:1;text-align:center;color:var(--led);font-size:17px;padding:4px 2px;text-shadow:0 0 7px rgba(57,255,220,.55)}
+  /* MUSIC VOLUME slider — sits in the machine's volume row and in the
+     Remote overlay, always showing the true 0-100 level next to it. */
+  .fn-slider{flex:1 1 60px;min-width:40px;height:30px;accent-color:#ff6cb5;cursor:pointer;background:transparent;border:0;padding:0}
+  .fn-slider + .fn-val{flex:none;min-width:48px}
+  .so-vol{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;width:100%;max-width:540px;background:rgba(0,0,0,.38);border:1px solid #3c2a75;border-radius:12px;padding:8px 10px}
+  .so-vol-label{font-size:10px;font-weight:900;letter-spacing:.14em;color:var(--muted)}
+  .so-vol-slider{flex:1 1 90px;min-width:70px;height:30px;accent-color:#ff6cb5;cursor:pointer;background:transparent;border:0;padding:0}
+  .so-vol-val{flex:none;min-width:48px}
   /* RESERVED — the lineup sits on top of the screen player itself, like a
      real videoke on-screen display, so it stays visible on the TV and in
      fullscreen. Hidden while nothing is reserved. */
@@ -268,17 +276,18 @@
   /* FUN SCORE reveal — fills the screen when a song ends and the Scorer is
      on, on the TV and on the Remote alike. Taps pass straight through to
      the player controls underneath. */
-  .score-overlay{position:absolute;inset:0;z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
-    text-align:center;padding:20px;background:radial-gradient(120% 120% at 50% 0%,rgba(36,18,77,.93),rgba(7,3,15,.97));
+  .score-overlay{position:absolute;inset:0;z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+    text-align:center;padding:30px 24px;background:radial-gradient(120% 120% at 50% 0%,rgba(36,18,77,.95),rgba(7,3,15,.98));
+    box-shadow:inset 0 0 0 4px rgba(255,217,59,.45),inset 0 0 120px rgba(255,217,59,.12);
     opacity:0;pointer-events:none;transition:opacity .3s ease}
   .score-overlay.show{opacity:1}
-  .score-label{font-family:"Fredoka",sans-serif;font-size:13px;font-weight:600;letter-spacing:.34em;color:var(--cyan)}
-  .score-num{font-family:"Fredoka",sans-serif;font-weight:700;font-size:clamp(64px,15vw,118px);line-height:1;color:var(--yellow);text-shadow:0 0 34px rgba(255,217,59,.45)}
+  .score-label{font-family:"Fredoka",sans-serif;font-size:clamp(18px,3.2vw,28px);font-weight:600;letter-spacing:.34em;color:var(--cyan)}
+  .score-num{font-family:"Fredoka",sans-serif;font-weight:700;font-size:clamp(132px,27vw,300px);line-height:.95;color:var(--yellow);text-shadow:0 0 54px rgba(255,217,59,.55)}
   .score-overlay.show .score-num{animation:scorepop .55s var(--ease-spring)}
   @keyframes scorepop{0%{transform:scale(.5)}100%{transform:scale(1)}}
-  .score-msg{font-family:"Fredoka",sans-serif;font-size:clamp(19px,3.6vw,27px);font-weight:600;color:#fff}
-  .score-song{font-weight:800;font-size:14px;color:var(--muted);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .score-note{font-size:12px;font-weight:700;color:var(--muted-2)}
+  .score-msg{font-family:"Fredoka",sans-serif;font-size:clamp(27px,5.4vw,48px);font-weight:600;color:#fff;line-height:1.15}
+  .score-song{font-weight:800;font-size:clamp(18px,3.2vw,28px);color:#fff;max-width:100%;line-height:1.3;overflow-wrap:anywhere}
+  .score-note{font-size:13.5px;font-weight:700;color:var(--muted)}
   @media (prefers-reduced-motion: reduce){.score-overlay{transition:none}.score-overlay.show .score-num{animation:none}}
 
   /* Scorer on/off toggle in the deck controls */
@@ -575,6 +584,11 @@
   @media(max-width:680px){
     .screen:has(> .screen-overlay.show){aspect-ratio:auto}
     .screen-overlay.show{position:relative;inset:auto}
+    /* The big FUN SCORE reveal gets the same treatment: on a phone the
+       16:9 screen is far too short for a 130px+ score number, so while
+       the score is up the screen grows and the card joins the layout. */
+    .screen:has(.score-overlay.show){aspect-ratio:auto}
+    .score-overlay.show{position:relative;inset:auto}
     .so-controls{width:100%}
     .so-controls .ctl{flex:1 1 118px;min-width:0}
     .so-now{overflow-wrap:anywhere}
@@ -785,6 +799,13 @@
             <button class="ctl ctl-next" id="remoteNext" type="button"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17.5" y="4" width="2.6" height="16" rx="1"/></svg> NEXT</button>
             <button class="ctl ctl-yt" id="remoteFs" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg> FULLSCREEN</button>
           </div>
+          <div class="so-vol">
+            <span class="so-vol-label">MUSIC VOLUME</span>
+            <button class="fn-btn" type="button" id="rVolDown" aria-label="Music volume down">-</button>
+            <input class="so-vol-slider" id="rVolSlider" type="range" min="0" max="100" step="1" value="100" aria-label="Music volume level">
+            <button class="fn-btn" type="button" id="rVolUp" aria-label="Music volume up">+</button>
+            <span class="led fn-val so-vol-val" id="rVolVal">100</span>
+          </div>
           <span class="so-note">Search, reserve and punch song numbers below — the Screen updates instantly.</span>
         </div>
       </div>
@@ -844,7 +865,7 @@
         <button class="scorer-toggle" id="scorerToggle" type="button" aria-pressed="false"><span class="st-dot" aria-hidden="true"></span> SCORER <span class="st-state" id="scorerState">OFF</span></button>
         <div class="fn-grid" id="fnGrid" aria-label="Sound controls">
           <div class="fn"><span class="fn-label">TEMPO</span><button class="fn-btn" type="button" data-fn="tempo" data-dir="-1" aria-label="Tempo slower">-</button><span class="led fn-val" id="fnTempo">1.0x</span><button class="fn-btn" type="button" data-fn="tempo" data-dir="1" aria-label="Tempo faster">+</button></div>
-          <div class="fn"><span class="fn-label">VOLUME</span><button class="fn-btn" type="button" data-fn="vol" data-dir="-1" aria-label="Volume down">-</button><span class="led fn-val" id="fnVol">100</span><button class="fn-btn" type="button" data-fn="vol" data-dir="1" aria-label="Volume up">+</button></div>
+          <div class="fn"><span class="fn-label">MUSIC VOLUME</span><button class="fn-btn" type="button" data-fn="vol" data-dir="-1" aria-label="Music volume down">-</button><input class="fn-slider" id="fnVolSlider" type="range" min="0" max="100" step="1" value="100" aria-label="Music volume level"><span class="led fn-val" id="fnVol">100</span><button class="fn-btn" type="button" data-fn="vol" data-dir="1" aria-label="Music volume up">+</button></div>
         </div>
         <p class="fn-note" id="fnNote" hidden>Tempo and volume need the full player, so they are off while the backup player is running.</p>
       </div>
@@ -1337,7 +1358,7 @@
     if (player && playerReady){
       if (autoplay) player.loadVideoById(song.id); else player.cueVideoById(song.id);
     } else if (fallbackFrame){
-      fallbackFrame.src = 'https://www.youtube.com/embed/' + song.id + '?rel=0&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1' + (autoplay ? '&autoplay=1' : '');
+      fallbackFrame.src = 'https://www.youtube.com/embed/' + song.id + '?rel=0&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&cc_load_policy=0' + (autoplay ? '&autoplay=1' : '');
       fallbackFrame.title = 'Karaoke player — ' + song.title;
       bigPlay.classList.toggle('hide', !!autoplay);
       if (!autoplay) bigPlayTxt.textContent = 'TAP TO SING';
@@ -1400,6 +1421,17 @@
     }, 2500);
   }
   function clearPlayWatchdog(){ if (playWatchdog){ clearTimeout(playWatchdog); playWatchdog = null; } }
+  /* Captions stay OFF, always. cc_load_policy=0 alone only stops captions
+     being forced on — a viewer's saved YouTube preference can still turn
+     them on over the lyrics. So actively clear the caption track and
+     unload the captions module every time a video loads, buffers or
+     plays. Safe to call repeatedly; each step is guarded. */
+  function forceCaptionsOff(){
+    if (!(player && playerReady)) return;
+    try { player.setOption('captions', 'track', {}); } catch(err){}
+    try { player.unloadModule('captions'); } catch(err){}
+    try { player.unloadModule('cc'); } catch(err){}
+  }
   var ICON_PLAY = '<svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="7 4 20 12 7 20 7 4"/></svg>';
   var ICON_PAUSE = '<svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="4" width="4.5" height="16" rx="1.2"/><rect x="14.5" y="4" width="4.5" height="16" rx="1.2"/></svg>';
   var ICON_VOL = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" stroke="none"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.6 5.4a9 9 0 0 1 0 13.2"/></svg>';
@@ -1436,6 +1468,7 @@
 
   function onPlayerStateChange(e){
     playerState = e.data; /* 0 ended · 1 playing · 2 paused · 3 buffering · 5 cued */
+    if (e.data === 1 || e.data === 3 || e.data === 5) forceCaptionsOff();
     broadcastState();
     if (e.data === 1){ skipChain = 0; playedCurrent = true; clearPlayWatchdog(); setPlayingUI(true); applyTempo(); }
     else if (e.data === 2){ bigPlayTxt.textContent = 'RESUME'; setPlayingUI(false); }
@@ -1474,6 +1507,7 @@
     if (!player) return; /* the fallback embed took over while the API loaded */
     playerReady = true;
     clearPlayWatchdog();
+    forceCaptionsOff();
     syncMuteIcon();
     applyTempo();
     applyVolume();
@@ -1512,7 +1546,7 @@
     fallbackFrame.allowFullscreen = true;
     fallbackFrame.referrerPolicy = 'strict-origin-when-cross-origin';
     fallbackFrame.title = 'Karaoke player — ' + current.title;
-    fallbackFrame.src = 'https://www.youtube.com/embed/' + current.id + '?rel=0&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1' + (pendingAutoplay ? '&autoplay=1' : '');
+    fallbackFrame.src = 'https://www.youtube.com/embed/' + current.id + '?rel=0&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&cc_load_policy=0' + (pendingAutoplay ? '&autoplay=1' : '');
     scr.insertBefore(fallbackFrame, clickLayer);
     if (pendingAutoplay) bigPlay.classList.add('hide');
   }
@@ -1523,7 +1557,7 @@
       if (playerState === 1){ player.pauseVideo(); flash(ICON_PAUSE); }
       else { player.playVideo(); flash(ICON_PLAY); }
     } else if (fallbackFrame){
-      fallbackFrame.src = 'https://www.youtube.com/embed/' + current.id + '?rel=0&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&autoplay=1';
+      fallbackFrame.src = 'https://www.youtube.com/embed/' + current.id + '?rel=0&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&cc_load_policy=0&autoplay=1';
       bigPlay.classList.add('hide');
     } else {
       /* Player still loading — queue the tap so it plays when ready,
@@ -1949,10 +1983,20 @@
   var fnVolEl = document.getElementById('fnVol');
   function fmtRate(r){ return (r % 1 === 0 ? r.toFixed(1) : String(r)) + 'x'; }
   function renderTempo(){ if (fnTempoEl) fnTempoEl.textContent = fmtRate(TEMPO_RATES[tempoIdx]); }
+  var fnVolSlider = document.getElementById('fnVolSlider');
+  var rVolSlider = document.getElementById('rVolSlider');
+  var rVolVal = document.getElementById('rVolVal');
   function renderVol(){
-    if (!fnVolEl) return;
-    var muted = player && playerReady && player.isMuted && player.isMuted();
-    fnVolEl.textContent = muted ? 'MUTE' : String(volLevel);
+    if (fnVolEl){
+      var muted = player && playerReady && player.isMuted && player.isMuted();
+      fnVolEl.textContent = muted ? 'MUTE' : String(volLevel);
+    }
+    /* Both sliders and the Remote readout mirror the same true level.
+       A slider being dragged right now is left alone so the broadcast
+       echo never fights the singer's thumb. */
+    if (fnVolSlider && document.activeElement !== fnVolSlider) fnVolSlider.value = volLevel;
+    if (rVolSlider && document.activeElement !== rVolSlider) rVolSlider.value = volLevel;
+    if (rVolVal) rVolVal.textContent = String(volLevel);
   }
   function applyTempo(){
     if (player && playerReady && player.setPlaybackRate) player.setPlaybackRate(TEMPO_RATES[tempoIdx]);
@@ -1985,9 +2029,37 @@
   }
   document.querySelectorAll('.fn-btn').forEach(function(b){
     b.addEventListener('click', function(){
-      soundStep(b.getAttribute('data-fn'), parseInt(b.getAttribute('data-dir'), 10));
+      var fnName = b.getAttribute('data-fn');
+      if (!fnName) return; /* the Remote overlay's volume buttons have no data-fn and wire themselves below */
+      soundStep(fnName, parseInt(b.getAttribute('data-dir'), 10));
     });
   });
+  /* MUSIC VOLUME sliders (machine deck + Remote overlay): dragging sets
+     an absolute 0-100 level. On this device it applies to the player at
+     once; on a Remote the readout updates instantly and the level goes
+     to the Screen (debounced) as a 'volset', which applies it for real
+     and broadcasts the confirmed level back. */
+  var volSendTimer = null;
+  function setVolumeLevel(v){
+    v = Math.max(0, Math.min(100, Math.round(v)));
+    if (linkMode === 'remote'){
+      volLevel = v;
+      renderVol();
+      if (volSendTimer) clearTimeout(volSendTimer);
+      volSendTimer = setTimeout(function(){ volSendTimer = null; sendCmd({ t:'volset', v: volLevel }); }, 120);
+      return;
+    }
+    if (fallbackFrame){ showToast('Volume is not available with the backup player'); renderVol(); return; }
+    volLevel = v;
+    applyVolume();
+    broadcastState();
+  }
+  if (fnVolSlider) fnVolSlider.addEventListener('input', function(){ setVolumeLevel(parseInt(fnVolSlider.value, 10)); });
+  if (rVolSlider) rVolSlider.addEventListener('input', function(){ setVolumeLevel(parseInt(rVolSlider.value, 10)); });
+  var rVolDown = document.getElementById('rVolDown');
+  var rVolUp = document.getElementById('rVolUp');
+  if (rVolDown) rVolDown.addEventListener('click', function(){ soundStep('vol', -1); });
+  if (rVolUp) rVolUp.addEventListener('click', function(){ soundStep('vol', 1); });
   renderTempo();
   renderVol();
 
@@ -2450,6 +2522,7 @@
     else if (msg.t === 'prev'){ playPrev(); }
     else if (msg.t === 'scorer'){ setScorer(msg.on); }
     else if (msg.t === 'sound'){ soundStep(msg.fn, msg.dir); }
+    else if (msg.t === 'volset'){ var vv = parseInt(msg.v, 10); if (!isNaN(vv)){ volLevel = Math.max(0, Math.min(100, vv)); applyVolume(); broadcastState(); } }
     else if (msg.t === 'fullscreen'){ toggleFullscreen(); }
     else if (msg.t === 'toggle'){ togglePlay(); }
     else if (msg.t === 'clear'){ queue = []; syncQueueUI(); }
