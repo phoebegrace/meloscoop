@@ -209,7 +209,10 @@
   .fn-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}
   @media(max-width:420px){.fn-grid{grid-template-columns:1fr}}
   .fn{display:flex;align-items:center;gap:7px;background:rgba(0,0,0,.35);border:1px solid #3c2a75;border-radius:12px;padding:7px 8px}
-  .fn-label{font-size:10px;font-weight:900;letter-spacing:.14em;color:var(--muted);min-width:44px}
+  .fn-label{font-size:10px;font-weight:900;letter-spacing:.14em;color:var(--muted);min-width:56px}
+  .fn-note{margin:10px 2px 0;font-size:12.5px;font-weight:700;line-height:1.45;color:var(--muted)}
+  .fn-grid.fn-off{opacity:.45}
+  .fn-grid.fn-off .fn-btn{pointer-events:none}
   .fn-btn{flex:none;width:38px;height:38px;border-radius:9px;border:1px solid #6a52b8;color:#fff;font-size:18px;font-weight:900;line-height:1;
     background:linear-gradient(180deg,#51399b,#33206e);box-shadow:0 3px 0 #0d0620;transition:transform .08s ease,box-shadow .08s ease}
   .fn-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #0d0620}
@@ -839,12 +842,11 @@
           <a class="ctl ctl-yt" id="nowYtLink" href="https://www.youtube.com/watch?v=NDXjhD_wVvA" target="_blank" rel="noopener">YouTube <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
         </div>
         <button class="scorer-toggle" id="scorerToggle" type="button" aria-pressed="false"><span class="st-dot" aria-hidden="true"></span> SCORER <span class="st-state" id="scorerState">OFF</span></button>
-        <div class="fn-grid" aria-label="Sound controls">
-          <div class="fn"><span class="fn-label">KEY</span><button class="fn-btn" type="button" data-fn="key" data-dir="-1" aria-label="Key down">-</button><span class="led fn-val" id="fnKey">0</span><button class="fn-btn" type="button" data-fn="key" data-dir="1" aria-label="Key up">+</button></div>
-          <div class="fn"><span class="fn-label">TEMPO</span><button class="fn-btn" type="button" data-fn="tempo" data-dir="-1" aria-label="Tempo down">-</button><span class="led fn-val" id="fnTempo">0</span><button class="fn-btn" type="button" data-fn="tempo" data-dir="1" aria-label="Tempo up">+</button></div>
-          <div class="fn"><span class="fn-label">MIC VOL</span><button class="fn-btn" type="button" data-fn="mic" data-dir="-1" aria-label="Mic volume down">-</button><span class="led fn-val" id="fnMic">7</span><button class="fn-btn" type="button" data-fn="mic" data-dir="1" aria-label="Mic volume up">+</button></div>
-          <div class="fn"><span class="fn-label">ECHO</span><button class="fn-btn" type="button" data-fn="echo" data-dir="-1" aria-label="Echo down">-</button><span class="led fn-val" id="fnEcho">5</span><button class="fn-btn" type="button" data-fn="echo" data-dir="1" aria-label="Echo up">+</button></div>
+        <div class="fn-grid" id="fnGrid" aria-label="Sound controls">
+          <div class="fn"><span class="fn-label">TEMPO</span><button class="fn-btn" type="button" data-fn="tempo" data-dir="-1" aria-label="Tempo slower">-</button><span class="led fn-val" id="fnTempo">1.0x</span><button class="fn-btn" type="button" data-fn="tempo" data-dir="1" aria-label="Tempo faster">+</button></div>
+          <div class="fn"><span class="fn-label">VOLUME</span><button class="fn-btn" type="button" data-fn="vol" data-dir="-1" aria-label="Volume down">-</button><span class="led fn-val" id="fnVol">100</span><button class="fn-btn" type="button" data-fn="vol" data-dir="1" aria-label="Volume up">+</button></div>
         </div>
+        <p class="fn-note" id="fnNote" hidden>Tempo and volume need the full player, so they are off while the backup player is running.</p>
       </div>
 
       <div class="speaker" aria-hidden="true"></div>
@@ -1435,7 +1437,7 @@
   function onPlayerStateChange(e){
     playerState = e.data; /* 0 ended · 1 playing · 2 paused · 3 buffering · 5 cued */
     broadcastState();
-    if (e.data === 1){ skipChain = 0; playedCurrent = true; clearPlayWatchdog(); setPlayingUI(true); }
+    if (e.data === 1){ skipChain = 0; playedCurrent = true; clearPlayWatchdog(); setPlayingUI(true); applyTempo(); }
     else if (e.data === 2){ bigPlayTxt.textContent = 'RESUME'; setPlayingUI(false); }
     else if (e.data === 5){ bigPlayTxt.textContent = 'TAP TO SING'; setPlayingUI(false); }
     else if (e.data === 0){
@@ -1473,6 +1475,8 @@
     playerReady = true;
     clearPlayWatchdog();
     syncMuteIcon();
+    applyTempo();
+    applyVolume();
     if (pendingSong){
       var s = pendingSong, ap = pendingAutoplay;
       pendingSong = null;
@@ -1499,6 +1503,10 @@
     if (fallbackFrame || playerReady) return;
     if (player && player.destroy){ try { player.destroy(); } catch(err){} player = null; }
     scr.classList.add('no-api');
+    /* The plain backup embed exposes no playbackRate or volume API, so
+       the sound pads honestly switch off instead of pretending. */
+    var fg = document.getElementById('fnGrid'); if (fg) fg.classList.add('fn-off');
+    var fnn = document.getElementById('fnNote'); if (fnn) fnn.hidden = false;
     fallbackFrame = document.createElement('iframe');
     fallbackFrame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
     fallbackFrame.allowFullscreen = true;
@@ -1533,7 +1541,7 @@
   cMute.addEventListener('click', function(){
     if (!(player && playerReady)) return;
     if (player.isMuted()) player.unMute(); else player.mute();
-    syncMuteIcon(); pokeUI();
+    syncMuteIcon(); renderVol(); pokeUI();
   });
   /* Fullscreen takes the whole TV — frame, NOW PLAYING header, LED song
      number, equalizer and ticker stay around the video, like a real TV. */
@@ -1927,24 +1935,61 @@
     else if (e.key === 'Backspace' && padBuffer){ padBuffer = padBuffer.slice(0,-1); renderPad(padBuffer ? 'ENTER SONG NO. THEN PRESS PLAY' : 'ENTER SONG NO. THEN PRESS PLAY', false); }
   });
 
-  /* ---------- SOUND PADS (KEY / TEMPO / MIC / ECHO) ---------- */
-  var fnState = { key:{v:0, min:-6, max:6, signed:true, el:'fnKey'},
-                  tempo:{v:0, min:-8, max:8, signed:true, el:'fnTempo'},
-                  mic:{v:7, min:0, max:10, signed:false, el:'fnMic'},
-                  echo:{v:5, min:0, max:10, signed:false, el:'fnEcho'} };
-  function renderFn(name){
-    var f = fnState[name];
-    document.getElementById(f.el).textContent = (f.signed && f.v > 0 ? '+' : '') + f.v;
+  /* ---------- SOUND CONTROLS (TEMPO + VOLUME) ----------
+     Only controls that genuinely change the sound stay on the machine.
+     TEMPO drives the YouTube player's real playbackRate and VOLUME
+     drives its real setVolume, so every press is audible. KEY, MIC VOL
+     and ECHO are gone entirely: a YouTube embed cannot change a song's
+     pitch, add echo, or control a microphone, so those pads could only
+     ever pretend to work. */
+  var TEMPO_RATES = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+  var tempoIdx = 2; /* TEMPO_RATES[2] = 1x, normal speed */
+  var volLevel = 100;
+  var fnTempoEl = document.getElementById('fnTempo');
+  var fnVolEl = document.getElementById('fnVol');
+  function fmtRate(r){ return (r % 1 === 0 ? r.toFixed(1) : String(r)) + 'x'; }
+  function renderTempo(){ if (fnTempoEl) fnTempoEl.textContent = fmtRate(TEMPO_RATES[tempoIdx]); }
+  function renderVol(){
+    if (!fnVolEl) return;
+    var muted = player && playerReady && player.isMuted && player.isMuted();
+    fnVolEl.textContent = muted ? 'MUTE' : String(volLevel);
+  }
+  function applyTempo(){
+    if (player && playerReady && player.setPlaybackRate) player.setPlaybackRate(TEMPO_RATES[tempoIdx]);
+    renderTempo();
+  }
+  function applyVolume(){
+    if (player && playerReady && player.setVolume){
+      if (volLevel > 0 && player.isMuted && player.isMuted()) player.unMute();
+      player.setVolume(volLevel);
+      syncMuteIcon();
+    }
+    renderVol();
+  }
+  function popFn(el){
+    if (el && motionOK()) gsap.fromTo(el, {scale:1.25}, {scale:1, duration:.3, ease:'back.out(3)', clearProps:'transform'});
+  }
+  function soundStep(name, dir){
+    if (linkMode === 'remote'){
+      /* Optimistic local readout; the Screen applies the same step for
+         real and its state broadcast confirms the values. */
+      if (name === 'tempo'){ tempoIdx = Math.max(0, Math.min(TEMPO_RATES.length - 1, tempoIdx + dir)); renderTempo(); popFn(fnTempoEl); }
+      else if (name === 'vol'){ volLevel = Math.max(0, Math.min(100, volLevel + dir * 10)); renderVol(); popFn(fnVolEl); }
+      sendCmd({ t:'sound', fn: name, dir: dir });
+      return;
+    }
+    if (fallbackFrame){ showToast('Tempo and volume are not available with the backup player'); return; }
+    if (name === 'tempo'){ tempoIdx = Math.max(0, Math.min(TEMPO_RATES.length - 1, tempoIdx + dir)); applyTempo(); popFn(fnTempoEl); }
+    else if (name === 'vol'){ volLevel = Math.max(0, Math.min(100, volLevel + dir * 10)); applyVolume(); popFn(fnVolEl); }
+    broadcastState();
   }
   document.querySelectorAll('.fn-btn').forEach(function(b){
     b.addEventListener('click', function(){
-      var name = b.getAttribute('data-fn');
-      var f = fnState[name];
-      f.v = Math.max(f.min, Math.min(f.max, f.v + parseInt(b.getAttribute('data-dir'), 10)));
-      renderFn(name);
-      if (motionOK()) gsap.fromTo('#' + f.el, {scale:1.25}, {scale:1, duration:.3, ease:'back.out(3)', clearProps:'transform'});
+      soundStep(b.getAttribute('data-fn'), parseInt(b.getAttribute('data-dir'), 10));
     });
   });
+  renderTempo();
+  renderVol();
 
   /* ---------- SONGBOOK ACTIONS ---------- */
   function bindRow(r){
@@ -2291,7 +2336,7 @@
   }
   function broadcastState(){
     if (linkMode !== 'screen' || !screenConn || !screenConn.open) return;
-    try { screenConn.send({ t:'state', cur: current.id, curMeta: songMeta(current), q: queue.slice(), qMeta: queue.map(function(id){ return songMeta(byId(id)); }), playing: playerState === 1, fs: !!(document.fullscreenElement || document.webkitFullscreenElement), scorer: scorerOn }); } catch(err){}
+    try { screenConn.send({ t:'state', cur: current.id, curMeta: songMeta(current), q: queue.slice(), qMeta: queue.map(function(id){ return songMeta(byId(id)); }), playing: playerState === 1, fs: !!(document.fullscreenElement || document.webkitFullscreenElement), scorer: scorerOn, tempo: tempoIdx, vol: volLevel }); } catch(err){}
   }
   /* The Remote's compact live queue readout, inside its overlay. */
   function updateRemoteQueueLine(){
@@ -2404,6 +2449,7 @@
     } else if (msg.t === 'next'){ playNext(); }
     else if (msg.t === 'prev'){ playPrev(); }
     else if (msg.t === 'scorer'){ setScorer(msg.on); }
+    else if (msg.t === 'sound'){ soundStep(msg.fn, msg.dir); }
     else if (msg.t === 'fullscreen'){ toggleFullscreen(); }
     else if (msg.t === 'toggle'){ togglePlay(); }
     else if (msg.t === 'clear'){ queue = []; syncQueueUI(); }
@@ -2422,6 +2468,8 @@
     if (st.curMeta) registerSong(st.curMeta);
     if (st.qMeta) st.qMeta.forEach(function(m){ registerSong(m); });
     if (typeof st.scorer !== 'undefined') setScorer(st.scorer);
+    if (typeof st.tempo !== 'undefined' && st.tempo >= 0 && st.tempo < TEMPO_RATES.length){ tempoIdx = st.tempo; renderTempo(); }
+    if (typeof st.vol !== 'undefined'){ volLevel = Math.max(0, Math.min(100, st.vol)); renderVol(); }
     var s = byId(st.cur);
     if (s){
       current = s;
